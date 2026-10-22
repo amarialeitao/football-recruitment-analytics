@@ -10,7 +10,8 @@ sources:
     filename: transfermarkt-datasets.duckdb
     # Pin the checksum of the file you analysed so results are reproducible.
     # Leave empty to accept any version (the checksum is still recorded in the manifest).
-    sha256: null
+    # Pinned 2026-10-22: dataset commit e44f186 (data current to 2026-07-06).
+    sha256: "ba1eff7337b8ca78cb533df0b6eba0d6fc58218e0767460f6770e0b37f5a2113"
     license: "CC0 1.0"
     attribution: "transfermarkt-datasets (github.com/dcaribou/transfermarkt-datasets)"
 
