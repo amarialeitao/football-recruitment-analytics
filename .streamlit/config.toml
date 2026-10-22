@@ -1,0 +1,10 @@
+# Neutral theme (colours mirror src/scouting/ui/theme.py).
+[theme]
+base = "light"
+primaryColor = "#2F6F8F"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F7FA"
+textColor = "#1F2933"
+
+[browser]
+gatherUsageStats = false

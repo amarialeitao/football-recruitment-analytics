@@ -97,12 +97,21 @@ PROFILE_METRICS: dict[str, tuple[str, ...]] = {
 
 # Metrics the public data cannot provide; pages show them as "not available" instead of hiding
 # the gap.
-UNAVAILABLE_METRICS: tuple[str, ...] = (
-    "Expected goals (xG) and expected assists (xA)",
-    "Shots and shot quality",
-    "Passes, progressive passes and carries",
-    "Defensive actions (tackles, interceptions, pressures)",
-    "Aerial and ground duels",
+UNAVAILABLE_METRICS: tuple[dict[str, str], ...] = (
+    {
+        "en": "Expected goals (xG) and expected assists (xA)",
+        "pt": "Golos esperados (xG) e assistências esperadas (xA)",
+    },
+    {"en": "Shots and shot quality", "pt": "Remates e qualidade dos remates"},
+    {
+        "en": "Passes, progressive passes and carries",
+        "pt": "Passes, passes progressivos e conduções",
+    },
+    {
+        "en": "Defensive actions (tackles, interceptions, pressures)",
+        "pt": "Ações defensivas (desarmes, interceções, pressões)",
+    },
+    {"en": "Aerial and ground duels", "pt": "Duelos aéreos e no chão"},
 )
 
 
