@@ -28,3 +28,11 @@ scope:
     SC1: Scottish Premiership
   # Season = calendar year in which the season starts (2025 = 2025/26).
   seasons: [2023, 2024, 2025]
+
+analysis:
+  # Minimum minutes in a season for a player to enter comparisons (percentiles, similarity, value).
+  min_minutes: 900
+  # Confidence badge by minutes played: < medium = low, medium..high = medium, >= high = high.
+  confidence_minutes: {medium: 900, high: 1800}
+  # Players up to this age (at 1 January of the season) are shown in the Potential page.
+  young_age_max: 23

@@ -5,7 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import duckdb
+import pandas as pd
 import pytest
+
+from metric_data import synthetic_player_season
 
 SCHEMA = [
     """create table competitions(competition_id varchar, name varchar, type varchar,
@@ -88,3 +91,9 @@ def make_source_db(path: Path, *, drop_column: tuple[str, str] | None = None) ->
 @pytest.fixture
 def source_db(tmp_path: Path) -> Path:
     return make_source_db(tmp_path / "source.duckdb")
+
+
+@pytest.fixture
+def ps() -> pd.DataFrame:
+    """Synthetic player-season table (see tests/metric_data.py)."""
+    return synthetic_player_season()

@@ -86,10 +86,30 @@ class Scope(_Strict):
         return list(self.competitions)
 
 
+class ConfidenceMinutes(_Strict):
+    """Minutes needed for a medium / high confidence badge (below ``medium`` = low)."""
+
+    medium: int = Field(900, gt=0)
+    high: int = Field(1800, gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> ConfidenceMinutes:
+        if self.high <= self.medium:
+            raise ValueError("confidence_minutes.high must be greater than medium")
+        return self
+
+
+class Analysis(_Strict):
+    min_minutes: int = Field(900, ge=0)
+    confidence_minutes: ConfidenceMinutes = ConfidenceMinutes()
+    young_age_max: float = Field(23, gt=14, lt=40)
+
+
 class Settings(_Strict):
     data: DataPaths = DataPaths()
     sources: Sources
     scope: Scope
+    analysis: Analysis = Analysis()
     root: Path = REPO_ROOT
 
     def resolve(self, path: Path) -> Path:
