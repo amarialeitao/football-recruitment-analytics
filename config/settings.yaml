@@ -1,0 +1,29 @@
+# Project settings. Every league, season and threshold used by the app lives here.
+
+data:
+  raw_dir: data/raw              # downloaded source files (git-ignored)
+  processed_dir: data/processed  # filtered Parquet extracts (git-ignored)
+
+sources:
+  transfermarkt:
+    url: "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb"
+    filename: transfermarkt-datasets.duckdb
+    # Pin the checksum of the file you analysed so results are reproducible.
+    # Leave empty to accept any version (the checksum is still recorded in the manifest).
+    sha256: null
+    license: "CC0 1.0"
+    attribution: "transfermarkt-datasets (github.com/dcaribou/transfermarkt-datasets)"
+
+scope:
+  focus_competition: PO1
+  competitions:
+    PO1: Liga Portugal
+    ES1: LaLiga
+    BE1: Jupiler Pro League
+    NL1: Eredivisie
+    GR1: Super League 1
+    TR1: Süper Lig
+    DK1: Superliga
+    SC1: Scottish Premiership
+  # Season = calendar year in which the season starts (2025 = 2025/26).
+  seasons: [2023, 2024, 2025]
