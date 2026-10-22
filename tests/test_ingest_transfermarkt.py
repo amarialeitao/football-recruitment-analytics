@@ -15,8 +15,10 @@ def _read(path: Path) -> list[tuple]:
     return duckdb.sql(f"select * from '{path.as_posix()}'").fetchall()
 
 
-def _ids(path: Path, column: str) -> set:
-    return {row[0] for row in duckdb.sql(f"select {column} from '{path.as_posix()}'").fetchall()}
+def _ids(path: Path, column: str) -> set[str]:
+    """Ids as text: the extract keeps source types, which differ between tables."""
+    rows = duckdb.sql(f"select cast({column} as varchar) from '{path.as_posix()}'").fetchall()
+    return {row[0] for row in rows}
 
 
 # --- extract -----------------------------------------------------------------------------------
@@ -28,26 +30,26 @@ def extracted(source_db: Path, tmp_path: Path) -> tm.ExtractResult:
 
 
 def test_extract_keeps_only_scope_games(extracted: tm.ExtractResult) -> None:
-    assert _ids(extracted.out_dir / "games.parquet", "game_id") == {100}
+    assert _ids(extracted.out_dir / "games.parquet", "game_id") == {"100"}
 
 
 def test_extract_handles_text_seasons(extracted: tm.ExtractResult) -> None:
     # season is VARCHAR in the source; game 101 (season '2020') must be excluded.
-    assert 101 not in _ids(extracted.out_dir / "games.parquet", "game_id")
+    assert "101" not in _ids(extracted.out_dir / "games.parquet", "game_id")
 
 
 def test_extract_related_tables_follow_scope(extracted: tm.ExtractResult) -> None:
     out = extracted.out_dir
     assert _ids(out / "appearances.parquet", "appearance_id") == {"100_10", "100_11"}
-    assert _ids(out / "game_events.parquet", "game_id") == {100}
-    assert _ids(out / "game_lineups.parquet", "player_id") == {10, 11}
-    assert _ids(out / "players.parquet", "player_id") == {10, 11}
-    assert _ids(out / "player_valuations.parquet", "player_id") == {10}
-    assert _ids(out / "transfers.parquet", "player_id") == {10}
+    assert _ids(out / "game_events.parquet", "game_id") == {"100"}
+    assert _ids(out / "game_lineups.parquet", "player_id") == {"10", "11"}
+    assert _ids(out / "players.parquet", "player_id") == {"10", "11"}
+    assert _ids(out / "player_valuations.parquet", "player_id") == {"10"}
+    assert _ids(out / "transfers.parquet", "player_id") == {"10"}
 
 
 def test_extract_includes_european_games_in_scope_seasons(extracted: tm.ExtractResult) -> None:
-    assert _ids(extracted.out_dir / "european_games.parquet", "game_id") == {103}
+    assert _ids(extracted.out_dir / "european_games.parquet", "game_id") == {"103"}
 
 
 def test_extract_keeps_reference_tables_whole(extracted: tm.ExtractResult) -> None:

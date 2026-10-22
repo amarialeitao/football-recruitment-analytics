@@ -173,8 +173,15 @@ def _queries(competitions: list[str], seasons: list[int]) -> dict[str, str]:
     comps = _sql_list(competitions)
     years = _sql_list(seasons)
     games = f"select g.* from games g where g.competition_id in {comps} and {_SEASON} in {years}"
-    game_ids = f"(select game_id from ({games}))"
-    player_ids = f"(select distinct player_id from appearances where game_id in {game_ids})"
+    # Id columns do not share one type across source tables (integer in some, text in others),
+    # so every id comparison is made on the text form of both sides.
+    game_ids = f"(select cast(game_id as varchar) from ({games}))"
+    player_ids = (
+        "(select distinct cast(player_id as varchar) from appearances "
+        f"where cast(game_id as varchar) in {game_ids})"
+    )
+    by_game = f"where cast(game_id as varchar) in {game_ids}"
+    by_player = f"where cast(player_id as varchar) in {player_ids}"
     # European club competitions in the same seasons: used later to estimate league strength.
     european_games = f"""
         select g.* from games g join competitions c using (competition_id)
@@ -184,12 +191,12 @@ def _queries(competitions: list[str], seasons: list[int]) -> dict[str, str]:
         "clubs": "select * from clubs",
         "games": games,
         "european_games": european_games,
-        "appearances": f"select * from appearances where game_id in {game_ids}",
-        "game_events": f"select * from game_events where game_id in {game_ids}",
-        "game_lineups": f"select * from game_lineups where game_id in {game_ids}",
-        "players": f"select * from players where player_id in {player_ids}",
-        "player_valuations": f"select * from player_valuations where player_id in {player_ids}",
-        "transfers": f"select * from transfers where player_id in {player_ids}",
+        "appearances": f"select * from appearances {by_game}",
+        "game_events": f"select * from game_events {by_game}",
+        "game_lineups": f"select * from game_lineups {by_game}",
+        "players": f"select * from players {by_player}",
+        "player_valuations": f"select * from player_valuations {by_player}",
+        "transfers": f"select * from transfers {by_player}",
     }
 
 
