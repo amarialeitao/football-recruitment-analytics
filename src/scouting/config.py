@@ -99,10 +99,33 @@ class ConfidenceMinutes(_Strict):
         return self
 
 
+class ConfidenceSample(_Strict):
+    """Group size needed for a medium / high confidence badge on group-level insights."""
+
+    medium: int = Field(30, gt=0)
+    high: int = Field(100, gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> ConfidenceSample:
+        if self.high <= self.medium:
+            raise ValueError("confidence_sample.high must be greater than medium")
+        return self
+
+
 class Analysis(_Strict):
     min_minutes: int = Field(900, ge=0)
     confidence_minutes: ConfidenceMinutes = ConfidenceMinutes()
+    confidence_sample: ConfidenceSample = ConfidenceSample()
     young_age_max: float = Field(23, gt=14, lt=40)
+
+
+class Quality(_Strict):
+    """Thresholds for the data-quality status board."""
+
+    completeness_min: float = Field(0.9, ge=0, le=1)
+    max_unreconciled_share: float = Field(0.01, ge=0, le=1)
+    max_stale_value_share: float = Field(0.05, ge=0, le=1)
+    max_data_age_days: int = Field(120, gt=0)
 
 
 class Settings(_Strict):
@@ -110,6 +133,7 @@ class Settings(_Strict):
     sources: Sources
     scope: Scope
     analysis: Analysis = Analysis()
+    quality: Quality = Quality()
     root: Path = REPO_ROOT
 
     def resolve(self, path: Path) -> Path:

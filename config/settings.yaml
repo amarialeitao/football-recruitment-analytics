@@ -34,5 +34,14 @@ analysis:
   min_minutes: 900
   # Confidence badge by minutes played: < medium = low, medium..high = medium, >= high = high.
   confidence_minutes: {medium: 900, high: 1800}
+  # Confidence badge for group-level insights by number of players compared.
+  confidence_sample: {medium: 30, high: 100}
   # Players up to this age (at 1 January of the season) are shown in the Potential page.
   young_age_max: 23
+
+quality:
+  # Status board thresholds (OK / ATTENTION).
+  completeness_min: 0.9          # share of filled key fields among players with minutes
+  max_unreconciled_share: 0.01   # games whose goal events do not match the final score
+  max_stale_value_share: 0.05    # regulars whose market value is over a year old
+  max_data_age_days: 120         # days between the data cut-off and today
