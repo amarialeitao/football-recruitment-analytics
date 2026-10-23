@@ -9,6 +9,9 @@ recruitment at Casa Pia AC. I wanted to show the work the role involves, not onl
 taking open data, turning it into metrics a scout can use, and explaining the result to someone
 who has five minutes and a decision to make.
 
+**Live demo:** [football-recruitment-analytics.streamlit.app](https://football-recruitment-analytics.streamlit.app)
+(free hosting: if it has been idle, it takes a minute to wake up).
+
 ![Market Overview](docs/screenshots/market-overview.png)
 
 ## Why this project
@@ -94,6 +97,37 @@ pytest            # unit tests plus every page rendered in both languages, cover
 
 The same checks run on GitHub Actions for Python 3.11, 3.12 and 3.13.
 
+## Live demo
+
+The demo runs on Streamlit Community Cloud. The repository still holds no data: the processed
+extract (about 17 MB) is attached to a GitHub release, and on first start the server downloads
+it, checks its SHA-256 against `sources.demo_data` in `config/settings.yaml` and unpacks it. This
+only happens when the `SCOUTING_DEMO_DATA` setting is on, so a local run always uses the data you
+built yourself (`src/scouting/ingest/demo_data.py`).
+
+To deploy your own copy:
+
+1. Build the data locally (Running it, above), then package it:
+
+   ```bash
+   python scripts/package_demo_data.py    # writes data/demo/demo-data.zip and prints its sha256
+   ```
+
+2. On GitHub, create a release (for example tagged `demo-data-v1`) and attach `demo-data.zip`.
+   The repository has to be public so the server can download it.
+3. Put the release asset's URL and the printed sha256 under `sources.demo_data` in
+   `config/settings.yaml`, commit and push.
+4. On [share.streamlit.io](https://share.streamlit.io), create an app from the repository:
+   branch `main`, main file `app.py`. Under **Advanced settings**, pick Python 3.12 and add this
+   secret:
+
+   ```toml
+   SCOUTING_DEMO_DATA = "true"
+   ```
+
+Dependencies are installed from `requirements.txt`, which installs this package from
+`pyproject.toml`. The AI Scouting Notes stay off in the demo.
+
 ## Data
 
 | | |
@@ -102,7 +136,7 @@ The same checks run on GitHub Actions for Python 3.11, 3.12 and 3.13.
 | License | CC0 1.0 (public domain) |
 | Version | Pinned by SHA-256 in `config/settings.yaml`; the download fails if the file changes |
 | Coverage | 8 leagues, 3 seasons, 6,260 league games, 6,782 players, games up to 24 May 2026 |
-| In the repository | No raw or processed data. `data/` is git-ignored and rebuilt by the scripts |
+| In the repository | No raw or processed data. `data/` is git-ignored and rebuilt by the scripts. The live demo downloads a checksum-pinned copy of the processed data from a GitHub release (see [Live demo](#live-demo)) |
 
 I tested other sources before choosing this one. FBref, Sofascore and WhoScored have richer
 metrics, but their terms do not allow automated collection, so they are out. Club Elo would have
@@ -242,9 +276,10 @@ three conditions is missing, the feature stays hidden.
 app.py                  Streamlit entry point (navigation, language)
 pages/                  one file per page
 config/settings.yaml    sources, scope, thresholds, AI settings: no number is hard-coded elsewhere
-scripts/                fetch_data, build_dataset, case_study
+scripts/                fetch_data, build_dataset, case_study, package_demo_data
+requirements.txt        for Streamlit Community Cloud (installs the package)
 src/scouting/
-  ingest/               download, checksum, schema check, extraction to Parquet
+  ingest/               download, checksum, schema check, extraction to Parquet, demo data
   transform/            on-pitch stints and the player x season x league table
   metrics/              catalog, percentiles, league strength, value, similarity, potential
   insights.py           automatic bilingual insights with confidence
@@ -282,4 +317,5 @@ Os dados públicos destas ligas não têm métricas defensivas, de passe nem xG;
 em cada perfil em vez de o esconder. Usei um assistente de programação com IA para escrever boa
 parte do código, com as decisões, a revisão e a verificação dos factos do meu lado. As notas de
 scouting por IA estão implementadas mas desligadas; a secção *AI Scouting Notes* explica como
-ativá-las. Projeto independente, sem ligação ao Casa Pia AC.
+ativá-las. Demo ao vivo: [football-recruitment-analytics.streamlit.app](https://football-recruitment-analytics.streamlit.app).
+Projeto independente, sem ligação ao Casa Pia AC.

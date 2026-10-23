@@ -1,0 +1,4 @@
+# For Streamlit Community Cloud, which installs from this file.
+# Installs this package (editable, so config/ and data/ resolve to the repository root)
+# and its dependencies from pyproject.toml.
+-e .

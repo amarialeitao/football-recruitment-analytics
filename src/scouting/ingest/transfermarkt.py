@@ -131,7 +131,7 @@ def download(
         if expected_sha256 is not None and actual != expected_sha256:
             raise ChecksumMismatchError(
                 f"Checksum mismatch for {url}: expected {expected_sha256}, got {actual}. "
-                "The source may have published a new version; update sources.transfermarkt.sha256 "
+                "The source may have published a new version; update the pinned sha256 "
                 "in config/settings.yaml if you want to use it."
             )
         tmp.replace(dest)

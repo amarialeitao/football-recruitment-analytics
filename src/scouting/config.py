@@ -48,8 +48,25 @@ class TransfermarktSource(_Strict):
         return value
 
 
+class DemoDataSource(_Strict):
+    """Prebuilt processed data for a hosted demo (see :mod:`scouting.ingest.demo_data`)."""
+
+    url: str
+    sha256: str
+    filename: str = "demo-data.zip"
+
+    @field_validator("sha256")
+    @classmethod
+    def _valid_sha256(cls, value: str) -> str:
+        value = value.lower()
+        if not _SHA256.match(value):
+            raise ValueError("sha256 must be 64 hexadecimal characters")
+        return value
+
+
 class Sources(_Strict):
     transfermarkt: TransfermarktSource
+    demo_data: DemoDataSource | None = None
 
 
 class Scope(_Strict):

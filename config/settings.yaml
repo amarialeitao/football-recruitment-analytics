@@ -14,6 +14,11 @@ sources:
     sha256: "ba1eff7337b8ca78cb533df0b6eba0d6fc58218e0767460f6770e0b37f5a2113"
     license: "CC0 1.0"
     attribution: "transfermarkt-datasets (github.com/dcaribou/transfermarkt-datasets)"
+  # Prebuilt processed data for the hosted demo only (README > Live demo). Used only when the
+  # SCOUTING_DEMO_DATA environment variable is set and no local data exists.
+  demo_data:
+    url: "https://github.com/amarialeitao/football-recruitment-analytics/releases/download/demo-data-v1/demo-data.zip"
+    sha256: "0288ab563a8b7d284abd50479caedeaf9dbefeb54a69334e6cc66d0323915fbf"
 
 scope:
   focus_competition: PO1
