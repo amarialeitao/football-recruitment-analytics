@@ -43,6 +43,9 @@ analysis:
   confidence_sample: {medium: 30, high: 100}
   # Players up to this age (at 1 January of the season) are shown in the Potential page.
   young_age_max: 23
+  # Player Profile, change since last season: a percentile must move at least this many points
+  # to read as "up" or "down"; smaller moves are shown as "about the same".
+  trend_min_change: 10
 
 quality:
   # Status board thresholds (OK / ATTENTION).

@@ -134,6 +134,7 @@ class Analysis(_Strict):
     confidence_minutes: ConfidenceMinutes = ConfidenceMinutes()
     confidence_sample: ConfidenceSample = ConfidenceSample()
     young_age_max: float = Field(23, gt=14, lt=40)
+    trend_min_change: float = Field(10, gt=0, le=100)
 
 
 class Quality(_Strict):

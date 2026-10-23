@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from scouting.insights import POSITION_LABEL, player_insights
+from scouting.metrics import trend
 from scouting.metrics.catalog import PROFILE_METRICS, metric
 from scouting.metrics.percentiles import PCT_SUFFIX
 from scouting.ui import charts
@@ -84,11 +85,48 @@ TEXT = {
         "pt": "Disponibilidade: minutos por época (rótulo = % dos minutos da equipa)",
     },
     "minutes_how": {
-        "en": "League minutes in each season and league in scope. Bars in blue reach the minimum "
+        "en": "League minutes in each season and league in scope. Black bars reach the minimum "
         "for comparisons; grey bars do not.",
         "pt": "Minutos de liga em cada época e liga analisadas. Barras azuis atingem o mínimo "
         "para comparações; as cinzentas não.",
     },
+    "trend_heading": {"en": "Change since last season", "pt": "Evolução face à época anterior"},
+    "trend_title_up": {
+        "en": "Biggest change since {before}: {metric} improved (percentile {a} → {b})",
+        "pt": "Maior mudança desde {before}: {metric} melhorou (percentil {a} → {b})",
+    },
+    "trend_title_down": {
+        "en": "Biggest change since {before}: {metric} declined (percentile {a} → {b})",
+        "pt": "Maior mudança desde {before}: {metric} piorou (percentil {a} → {b})",
+    },
+    "trend_title_same": {
+        "en": "No big change since {before}: every percentile moved less than {t} points",
+        "pt": "Sem grandes mudanças desde {before}: nenhum percentil mudou {t} pontos ou mais",
+    },
+    "trend_context": {
+        "en": "{before}: {prev_club} ({prev_league}), {prev_min} min · {after}: {club} "
+        "({league}), {min} min",
+        "pt": "{before}: {prev_club} ({prev_league}), {prev_min} min · {after}: {club} "
+        "({league}), {min} min",
+    },
+    "trend_how": {
+        "en": "Each row is one metric. The grey dot is the player's percentile last season and "
+        "the black dot this season, both against players of his position with at least {min} "
+        "minutes in all leagues in scope (100 = best). A solid line marks a change of {t} points "
+        "or more; a dotted line, a smaller move. Because 100 is always best, *improved* means "
+        "better even where lower raw numbers are better: fewer cards, fewer goals conceded. "
+        "Percentiles are relative: a player can rise because he improved or because his peers "
+        "changed.",
+        "pt": "Cada linha é uma métrica. O ponto cinzento é o percentil do jogador na época "
+        "anterior e o preto nesta época, ambos face a jogadores da sua posição com pelo menos "
+        "{min} minutos em todas as ligas analisadas (100 = melhor). Uma linha contínua marca uma "
+        "mudança de {t} pontos ou mais; uma pontilhada, uma mudança menor. Como 100 é sempre o "
+        "melhor, *melhorou* quer dizer melhor mesmo quando números mais baixos são melhores: "
+        "menos cartões, menos golos sofridos. Os percentis são relativos: um jogador pode subir "
+        "porque melhorou ou porque os pares mudaram.",
+    },
+    "trend_prev": {"en": "Last season", "pt": "Época anterior"},
+    "trend_now": {"en": "This season", "pt": "Esta época"},
     "similar": {"en": "Find similar players", "pt": "Procurar jogadores parecidos"},
     "metric": {"en": "Metric", "pt": "Métrica"},
     "raw": {"en": "Value", "pt": "Valor"},
@@ -200,6 +238,60 @@ if row["minutes"] >= min_minutes and group in PROFILE_METRICS:
     )
 else:
     c.insight_list(insights, lang)
+
+# Change since last season (percentiles against the same kind of peers each season)
+st.subheader(tr(TEXT["trend_heading"], lang))
+previous = trend.previous_season(data.players, row)
+why_not = trend.minutes_note(previous, min_minutes, lang)
+if row["minutes"] < min_minutes or group not in PROFILE_METRICS:
+    st.caption(t("no_data", lang))
+elif why_not:
+    st.caption(why_not)
+else:
+    changes = trend.season_changes(
+        row, previous, PROFILE_METRICS[group], threshold=settings.analysis.trend_min_change
+    )
+    before, after = season_label(int(previous["season"])), season_label(int(row["season"]))
+    threshold = f"{settings.analysis.trend_min_change:g}"
+    top = changes.iloc[0]
+    if top["direction"] == "same":
+        trend_title = tr(TEXT["trend_title_same"], lang).format(before=before, t=threshold)
+    else:
+        trend_title = tr(TEXT[f"trend_title_{top['direction']}"], lang).format(
+            before=before,
+            metric=metric(top["metric"]).label_for(lang).lower(),
+            a=round(top["previous_pct"]),
+            b=round(top["current_pct"]),
+        )
+    st.caption(
+        tr(TEXT["trend_context"], lang).format(
+            before=before,
+            prev_club=previous["club_name"],
+            prev_league=previous["competition_name"],
+            prev_min=num(previous["minutes"], lang),
+            after=after,
+            club=row["club_name"],
+            league=row["competition_name"],
+            min=num(row["minutes"], lang),
+        )
+    )
+    c.chart_block(
+        charts.season_change(changes, lang, title=trend_title, seasons=(before, after)),
+        lang=lang,
+        footer=c.source_note(lang, data_cutoff=data.data_cutoff),
+        how_to_read=tr(TEXT["trend_how"], lang).format(min=num(min_minutes, lang), t=threshold),
+        insights=trend.change_insights(
+            changes, current=row, previous=previous, confidence_minutes=thresholds
+        ),
+        observed=pd.DataFrame(
+            {
+                tr(TEXT["metric"], lang): [metric(k).label_for(lang) for k in changes["metric"]],
+                tr(TEXT["trend_prev"], lang): changes["previous_pct"].round(0),
+                tr(TEXT["trend_now"], lang): changes["current_pct"].round(0),
+            }
+        ),
+        key="trend",
+    )
 
 history = data.valuations[data.valuations["player_id"] == row["player_id"]]
 if history.empty:

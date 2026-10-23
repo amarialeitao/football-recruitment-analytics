@@ -146,3 +146,79 @@ def minutes_by_season(rows: pd.DataFrame, lang: str, *, title: str) -> go.Figure
 
 def highlight_color(is_highlight: bool) -> str:
     return ACCENT if is_highlight else NEUTRAL_SERIES
+
+
+def season_change(
+    changes: pd.DataFrame,
+    lang: str,
+    *,
+    title: str,
+    seasons: tuple[str, str],
+) -> go.Figure:
+    """Percentile last season (grey) and this season (black) per metric, joined by a line.
+
+    Clear changes (``direction`` up or down) get a solid line; small ones a light dotted line,
+    so the eye goes to what actually moved. Rows keep the order of ``changes``.
+    """
+    ordered = changes.iloc[::-1]  # Plotly draws the first category at the bottom
+    labels = [metric(k).label_for(lang) for k in ordered["metric"]]
+    fig = go.Figure()
+    for label, item in zip(labels, ordered.itertuples(), strict=True):
+        clear = item.direction != "same"
+        fig.add_trace(
+            go.Scatter(
+                x=[item.previous_pct, item.current_pct],
+                y=[label, label],
+                mode="lines",
+                line={
+                    "color": PRIMARY if clear else NEUTRAL_SERIES,
+                    "width": 2 if clear else 1,
+                    "dash": "solid" if clear else "dot",
+                },
+                hoverinfo="skip",
+                showlegend=False,
+            )
+        )
+    before, after = seasons
+    fig.add_trace(
+        go.Scatter(
+            x=ordered["previous_pct"],
+            y=labels,
+            mode="markers",
+            name=before,
+            marker={"color": NEUTRAL_SERIES, "size": 11},
+            hovertemplate=f"%{{y}}<br>{before}: %{{x:.0f}}<extra></extra>",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=ordered["current_pct"],
+            y=labels,
+            mode="markers+text",
+            name=after,
+            marker={"color": PRIMARY, "size": 13},
+            text=[f"{v:.0f}" for v in ordered["current_pct"]],
+            # Label on the outside of the move, so it never sits on the line.
+            textposition=[
+                "middle left" if now < before_pct else "middle right"
+                for now, before_pct in zip(
+                    ordered["current_pct"], ordered["previous_pct"], strict=True
+                )
+            ],
+            hovertemplate=f"%{{y}}<br>{after}: %{{x:.0f}}<extra></extra>",
+        )
+    )
+    fig.add_vline(x=50, line_dash="dot", line_color=MUTED, line_width=1)
+    axis_title = (
+        "Percentile vs players in the same position (100 = best)"
+        if lang == "en"
+        else "Percentil vs jogadores da mesma posição (100 = melhor)"
+    )
+    fig.update_layout(
+        title=title,
+        xaxis={"range": [0, 108], "title": axis_title},
+        yaxis={"title": None},
+        height=110 + 48 * len(changes),
+        legend={"orientation": "h", "y": -0.25, "x": 0},
+    )
+    return fig

@@ -92,6 +92,24 @@ Every insight carries a confidence badge, decided by the weakest of two samples:
 The wording follows the confidence: an observation ("top 11% for start rate") is always shown,
 while an interpretation becomes more cautious when the sample is small.
 
+### Change since last season
+
+The Player Profile compares each profile percentile with the player's previous season
+(`src/scouting/metrics/trend.py`). Percentiles, not raw values, are compared, because each
+season's percentile already measures him against the same kind of peers. "Start rate improved,
+percentile 60 → 89" means he moved up among regulars in his position.
+
+- Both seasons need 900+ minutes. Otherwise the page says why there is no comparison (no
+  previous season in scope, or too few minutes) instead of showing a shaky one.
+- If he played in two leagues the previous season, the one with more minutes is used.
+- A move of 10 percentile points or more reads as *improved* or *declined*; smaller moves are
+  *about the same* (`analysis.trend_min_change`).
+- Because 100 is always best, *improved* also means fewer cards or fewer goals conceded.
+- The confidence badge comes from the season with fewer minutes.
+
+Percentiles are relative, so a player can rise because he improved or because his peers
+changed. The page says so next to the chart.
+
 ## 5. League strength
 
 A top-10% player in Scotland and a top-10% player in Spain are not the same thing, so every page
