@@ -8,6 +8,7 @@ TITLES = {
     "finder": {"en": "Player Finder", "pt": "Pesquisa de jogadores"},
     "profile": {"en": "Player Profile", "pt": "Perfil do jogador"},
     "similar": {"en": "Similar Players", "pt": "Jogadores parecidos"},
+    "value": {"en": "Value Finder", "pt": "Valor de mercado"},
 }
 
 lang = st.session_state.get("lang", "en")
