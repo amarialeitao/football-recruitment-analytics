@@ -84,6 +84,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-value", type=float, default=DEFAULTS["max_value"])
     parser.add_argument("--max-age", type=float, default=DEFAULTS["max_age"])
     parser.add_argument("--min-minutes", type=int, default=DEFAULTS["min_minutes"])
+    parser.add_argument(
+        "--rank-by",
+        choices=["similarity", "performance"],
+        default="similarity",
+        help="Order the shortlist by similarity to the player (default) or by output",
+    )
     args = parser.parse_args(argv)
 
     settings = load_settings(args.config)
@@ -105,13 +111,14 @@ def main(argv: list[str] | None = None) -> int:
         max_age=args.max_age,
         min_minutes=args.min_minutes,
         exclude_club_ids=[int(ref["club_id"])],
+        rank_by=args.rank_by,
     )
     candidates = shortlist(players, brief, comparison_min_minutes=settings.analysis.min_minutes)
     picks = pick_alternatives(candidates, brief)
 
     print(f"## Reference: {ref['name']} ({ref['club_name']}, {ref['season_label']})\n")
     print(_markdown(match.head(1)), "\n")
-    print(f"## Shortlist: {len(candidates)} candidates (top 10 by similarity)\n")
+    print(f"## Shortlist: {len(candidates)} candidates (top 10 by {args.rank_by})\n")
     print(_markdown(candidates.head(10)), "\n")
     print("## Alternatives\n")
     print(_markdown(picks.assign(name=picks["pick"] + ": " + picks["name"])))

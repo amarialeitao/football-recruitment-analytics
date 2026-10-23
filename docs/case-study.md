@@ -6,6 +6,8 @@
 >
 > Data: transfermarkt-datasets (CC0), league games to 24 May 2026. Reproduce every number with
 > `python scripts/case_study.py`.
+>
+> See also the [second case study](case-study-2.md): a striker for under €1m.
 
 ## Answer in short
 

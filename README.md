@@ -37,7 +37,7 @@ That shaped three decisions:
 | What the role asks for | Where it is in this project |
 | --- | --- |
 | Identify and profile players with data | Player Finder, Player Profile and Similar Players pages |
-| Dashboards and reports | A seven-page Streamlit app, bilingual, plus a written [case study](docs/case-study.md) |
+| Dashboards and reports | A seven-page Streamlit app, bilingual, plus two written case studies ([right-back](docs/case-study.md), [striker](docs/case-study-2.md)) |
 | Metrics and models for performance and potential | Per-90 and on-pitch metrics, percentiles by position, a market value model, potential signals ([methodology](docs/methodology.md)) |
 | Internal tools, pipelines and automated workflows | A reproducible pipeline from a pinned, checksummed download to a tested analysis table, with CI on every push to main and every pull request |
 | Practical use of AI | An optional AI scouting-notes feature with number checking, and an honest account of how I used a coding assistant ([below](#how-i-used-ai)) |
@@ -52,13 +52,15 @@ Seven pages, all sharing the same filters (season, leagues, positions, age, minu
   with the other leagues, plus three starting lists: young regulars, players valued below their
   output, and contracts about to end.
 - **Player Finder**: filter the whole pool and export the list to CSV.
-- **Player Profile**: one player's percentiles against his position group, market value over
-  time, minutes by season, and a few automatic observations with a confidence badge.
+- **Player Profile**: one player's percentiles against his position group, how each one changed
+  since last season ("start rate improved, percentile 60 → 89"), market value over time,
+  minutes by season, and a few automatic observations with a confidence badge.
 - **Similar Players**: who plays a similar statistical role, useful when a key player leaves.
 - **Value Finder**: players whose market value is low for their output, age and league.
 - **Potential**: young players who already play more than other regulars of their age.
-- **Data Quality**: coverage per league, completeness of key fields and a status board, so the
-  person reading the other pages knows what the data can and cannot carry.
+- **Data Quality**: coverage per league, completeness of key fields, a status board and the
+  results of the automatic data checks, so the person reading the other pages knows what the
+  data can and cannot carry.
 
 **Designed to be read, not decoded.** Every table formats numbers the same way (€2.5M, 94%),
 puts the answer in the first columns and explains each metric when you hover its header.
@@ -70,15 +72,19 @@ focus league, flagged players), and a note in the sidebar that the project is in
 | --- | --- | --- |
 | ![Player Profile](docs/screenshots/player-profile.png) | ![Similar Players](docs/screenshots/similar-players.png) | ![Value Finder](docs/screenshots/value-finder.png) |
 
-## The case study
+## The case studies
 
-The tool is only useful if it answers a real question, so I used it on one: **Casa Pia's
-most-used player in 2025/26, right-back Gaizka Larrazabal, was on a contract ending in June 2026.
-Who are three low-cost right-backs worth scouting first?**
+The tool is only useful if it answers real questions, so I used it on two, written the way I
+would hand them to a head of recruitment. Every number in them can be reproduced with
+`scripts/case_study.py`.
 
-The answer, the reasoning, the risks and the limits are in
-[docs/case-study.md](docs/case-study.md), written the way I would hand it to a head of
-recruitment. Every number in it can be reproduced with `python scripts/case_study.py`.
+1. **[Replacing the right-back](docs/case-study.md).** Casa Pia's most-used player in 2025/26,
+   right-back Gaizka Larrazabal, was on a contract ending in June 2026. Who are three low-cost
+   right-backs worth scouting first?
+2. **[A striker for under €1m](docs/case-study-2.md).** The most-used centre-forward, Cassiano, is
+   36, out of contract and his output fell sharply. In this price range, strikers who score turn
+   out to be part-timers and regulars score less. The study ranks by output instead of
+   similarity and weighs upside against sample size.
 
 ## Running it
 
@@ -88,7 +94,7 @@ script downloads it.
 ```bash
 pip install -e ".[dev]"
 python scripts/fetch_data.py      # downloads the source once, checks its checksum, extracts the scope
-python scripts/build_dataset.py   # builds the player x season x league table
+python scripts/build_dataset.py   # builds the player x season x league table and runs the data checks
 streamlit run app.py
 ```
 
@@ -206,7 +212,7 @@ few examples of where the review changed the result:
 - **Potential.** The first version compared young players with everyone their age, so simply
   playing made 63% of them look promising. Comparing them with regulars of the same age brought
   that down to a meaningful 30%.
-- **Fact-checking.** Before committing the case study I checked every claim against the data.
+- **Fact-checking.** Before committing each case study I checked every claim against the data.
   Two were wrong in the first draft (who had the highest value in the squad, and how the club's
   arrivals split between fees, free transfers and unknown fees) and were corrected.
 
@@ -290,11 +296,11 @@ src/scouting/
   metrics/              catalog, percentiles, league strength, value, similarity, potential
   insights.py           automatic bilingual insights with confidence
   quality.py, health.py data-quality checks and the status board
-  case_study.py         the rule-based shortlist used in the case study
+  case_study.py         the rule-based shortlist used in the case studies
   llm_notes.py          optional AI scouting notes
   ui/                   theme, translations, filters, charts, shared components
 tests/                  synthetic data only; no real player data in the tests
-docs/                   methodology, case study, screenshots
+docs/                   methodology, case studies, screenshots
 ```
 
 ## About this project
@@ -315,9 +321,9 @@ abertos (transfermarkt-datasets, CC0) e sempre com o nível de confiança de cad
 
 Fiz este projeto para a candidatura a analista de dados júnior de recrutamento do Casa Pia AC. A
 aplicação tem sete páginas (visão do mercado, pesquisa, perfil, jogadores semelhantes, valor,
-potencial e qualidade dos dados), funciona em inglês e português, e é acompanhada de um
-[caso de estudo](docs/case-study.md): três alternativas de baixo custo para substituir o
-lateral-direito Gaizka Larrazabal.
+potencial e qualidade dos dados), funciona em inglês e português, e é acompanhada de dois casos
+de estudo: três alternativas de baixo custo para substituir o lateral-direito Gaizka Larrazabal
+([caso 1](docs/case-study.md)) e um ponta de lança por menos de €1m ([caso 2](docs/case-study-2.md)).
 
 Os dados públicos destas ligas não têm métricas defensivas, de passe nem xG; a aplicação diz isso
 em cada perfil em vez de o esconder. Usei um assistente de programação com IA para escrever boa

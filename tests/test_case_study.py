@@ -89,6 +89,17 @@ def test_value_floor_blocks_cheap_low_output_players(players: pd.DataFrame) -> N
     assert candidates.loc[weakest, "player_id"] not in picks["player_id"].tolist()
 
 
+def test_rank_by_performance(players: pd.DataFrame) -> None:
+    brief = _brief(players, rank_by="performance", min_minutes_share=0.0)
+    candidates = shortlist(players, brief, comparison_min_minutes=900)
+    assert candidates["performance_score"].is_monotonic_decreasing
+    picks = pick_alternatives(candidates, brief)
+    assert picks["pick"].tolist()[0] == "best_output"
+    assert picks.iloc[0]["player_id"] == candidates.iloc[0]["player_id"]
+    with pytest.raises(ValueError, match="rank_by"):
+        _brief(players, rank_by="value")
+
+
 def test_empty_shortlist(players: pd.DataFrame) -> None:
     brief = _brief(players, max_market_value=1.0)
     candidates = shortlist(players, brief, comparison_min_minutes=900)

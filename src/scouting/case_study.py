@@ -5,10 +5,12 @@ The method is deliberately rule-based so every step can be explained and reprodu
 1. **Brief**: the player to replace, the positions that can replace him, a market-value cap
    (the budget), an age cap and a minimum of minutes (high-confidence sample).
 2. **Shortlist**: players of the same season in the leagues in scope who meet the brief,
-   ranked by similarity to the reference profile (:func:`scouting.metrics.similarity`).
+   ranked by similarity to the reference profile (:func:`scouting.metrics.similarity`), or by
+   output (performance score) when the brief says ``rank_by="performance"``: useful when the
+   club needs *more* than the departing player gave, not a copy of him.
 3. **Three alternatives**, each answering a different question:
 
-   * ``closest_profile``: the most similar profile within budget;
+   * ``closest_profile`` (or ``best_output`` when ranking by output): the first candidate;
    * ``best_value``: among the most similar candidates with strong output (performance score in
      the shortlist's top quarter), the one valued furthest below what his output usually costs
      (lowest ``value_ratio``). The output floor stops "cheap because he produces little" picks;
@@ -44,6 +46,11 @@ class Brief:
     min_minutes_share: float = 0.6  # "already plays most of his team's minutes"
     value_floor_quantile: float = 0.75  # output floor for best_value (shortlist quantile)
     young_floor_quantile: float = 0.5  # output floor for younger_upside
+    rank_by: str = "similarity"  # or "performance"
+
+    def __post_init__(self) -> None:
+        if self.rank_by not in {"similarity", "performance"}:
+            raise ValueError("rank_by must be 'similarity' or 'performance'")
 
 
 def shortlist(players: pd.DataFrame, brief: Brief, *, comparison_min_minutes: int) -> pd.DataFrame:
@@ -64,7 +71,10 @@ def shortlist(players: pd.DataFrame, brief: Brief, *, comparison_min_minutes: in
         & ~candidates["club_id"].isin(list(brief.exclude_club_ids))
         & ~candidates["market_value_stale"].fillna(True).astype(bool)
     )
-    return candidates[mask].reset_index(drop=True)
+    out = candidates[mask]
+    if brief.rank_by == "performance":
+        out = out.sort_values(["performance_score", "similarity"], ascending=False)
+    return out.reset_index(drop=True)
 
 
 def pick_alternatives(candidates: pd.DataFrame, brief: Brief) -> pd.DataFrame:
@@ -77,7 +87,8 @@ def pick_alternatives(candidates: pd.DataFrame, brief: Brief) -> pd.DataFrame:
     def at_least(quantile: float) -> pd.DataFrame:
         return top[top["performance_score"] >= score.quantile(quantile)]
 
-    picks: list[tuple[str, int]] = [("closest_profile", top.index[0])]
+    first = "best_output" if brief.rank_by == "performance" else "closest_profile"
+    picks: list[tuple[str, int]] = [(first, top.index[0])]
 
     def remaining(frame: pd.DataFrame) -> pd.DataFrame:
         return frame[~frame.index.isin([i for _, i in picks])]
