@@ -7,6 +7,7 @@ from scouting.ui.players import PAGES
 TITLES = {
     "finder": {"en": "Player Finder", "pt": "Pesquisa de jogadores"},
     "profile": {"en": "Player Profile", "pt": "Perfil do jogador"},
+    "similar": {"en": "Similar Players", "pt": "Jogadores parecidos"},
 }
 
 lang = st.session_state.get("lang", "en")
