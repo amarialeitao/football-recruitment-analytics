@@ -48,3 +48,14 @@ def test_similarity_filters_apply_to_candidates(ps: pd.DataFrame) -> None:
 def test_similarity_unknown_reference(ps: pd.DataFrame) -> None:
     with pytest.raises(ValueError, match="not found"):
         find_similar(ps, {"player_id": -1, "season": 2025, "competition_id": "AA1"}, min_minutes=0)
+
+
+def test_scaled_profile_is_not_identical(ps: pd.DataFrame) -> None:
+    ref = _ref(ps)
+    half = ps[ps["player_id"] == ref["player_id"]].copy()
+    half["player_id"] = 8888
+    for key in ("goals_p90", "assists_p90", "goal_contributions_p90"):
+        half[key] = half[key] / 2
+    out = find_similar(pd.concat([ps, half], ignore_index=True), ref, min_minutes=900, top_n=50)
+    score = out.loc[out["player_id"] == 8888, "similarity"]
+    assert score.empty or score.iloc[0] < 100

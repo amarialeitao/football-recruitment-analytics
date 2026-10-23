@@ -6,8 +6,11 @@ Method (kept simple so it can be explained to a sporting director):
 2. Features: the position group's profile metrics (per 90 and usage), each standardized to a
    z-score within the candidate pool, with "lower is better" metrics flipped. Optional weights
    change how much each feature counts.
-3. Similarity: cosine similarity between the reference vector and each candidate, scaled to
-   0-100, plus the Euclidean distance for tie-breaking.
+3. Similarity: ``100 * exp(-d / sqrt(k))``, where ``d`` is the Euclidean distance between the
+   reference and the candidate in z-score units and ``k`` the number of features. An identical
+   profile scores 100; a typical pair of players scores around 30. Distance (not cosine)
+   is used so that intensity counts: a player with half the output in every metric is not
+   "identical".
 
 The result says *who plays a similar statistical role with the data available*, not who is as
 good: the public data has no passing, defending or shot-quality metrics.
@@ -72,13 +75,10 @@ def find_similar(
     vectors = z.to_numpy() * w
     ref_vector = vectors[pool.index.get_loc(ref_row.name)]
 
-    norms = np.linalg.norm(vectors, axis=1) * np.linalg.norm(ref_vector)
-    with np.errstate(invalid="ignore", divide="ignore"):
-        cosine = np.where(norms > 0, vectors @ ref_vector / norms, 0.0)
     distance = np.linalg.norm(vectors - ref_vector, axis=1)
 
     result = pool.copy()
-    result["similarity"] = np.round((cosine + 1) / 2 * 100, 1)
+    result["similarity"] = np.round(100 * np.exp(-distance / np.sqrt(len(keys))), 1)
     result["distance"] = distance
 
     is_reference = result["player_id"] == ref_row["player_id"]
@@ -92,5 +92,5 @@ def find_similar(
     if max_market_value is not None:
         result = result[result["market_value_end"] <= max_market_value]
 
-    ordered = result.sort_values(["similarity", "distance"], ascending=[False, True])
+    ordered = result.sort_values(["distance", "player_id"])
     return ordered.head(top_n).reset_index(drop=True)
