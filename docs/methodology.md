@@ -240,12 +240,13 @@ are reported but never block the build: a height outside 150-215 cm, a contract 
 before the season started, or a missing position. In the current data there is one implausible
 height, one already-expired contract and six players without a position.
 
-The checks found a real issue while they were being written. For 260 player-seasons where a
-player moved between two clubs of the same league, "share of team minutes" was measured against
-his main club's games only, which overstated it. It now uses the full league season. That
-change does not alter any number in the right-back case study. Moving clubs is also why one player
-legitimately played 31 games in a 30-game season, so that rule only applies to players who
-stayed at one club.
+Writing the checks led to a safeguard. For the 260 player-seasons where a player moved between
+two clubs of the same league, "share of team minutes" was measured against his main club's
+games. That would overstate the share whenever clubs had played different numbers of games. The
+calculation now uses the full league season for these players. In the current data it changes no
+number: in all 24 league-seasons every club played the same number of league games (regular
+season only), so both ways give the same result. Moving clubs is also why one player legitimately
+played 31 games in a 30-game season, so that rule only applies to players who stayed at one club.
 
 ## 11. Limitations
 

@@ -127,7 +127,8 @@ def build_player_season(tables: Tables, stints: pd.DataFrame | None = None) -> p
     df = df.merge(team_games, on=["season", "competition_id", "club_id"])
     # A player who moved between two clubs of the same league could play in more games than
     # his main club alone: measure him against the full league season instead (the most games
-    # any club played), so his share is not overstated.
+    # any club played), so his share cannot be overstated if clubs played different numbers of
+    # games (in the current data every club in a league-season plays the same number).
     season_length = team_games.groupby(["season", "competition_id"])["team_games"].max()
     full_season = df.set_index(["season", "competition_id"]).index.map(season_length)
     df["team_games"] = df["team_games"].where(df["n_clubs"] == 1, full_season.to_numpy())
