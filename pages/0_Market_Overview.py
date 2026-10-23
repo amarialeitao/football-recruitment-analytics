@@ -8,6 +8,7 @@ import streamlit as st
 
 from scouting.health import status_board
 from scouting.insights import market_insights
+from scouting.ui import columns as col
 from scouting.ui import components as c
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
@@ -63,7 +64,6 @@ TEXT = {
     "ratio": {"en": "Value vs expected", "pt": "Valor vs esperado"},
     "contract": {"en": "Contract end", "pt": "Fim de contrato"},
     "share": {"en": "Share of team minutes", "pt": "% dos minutos da equipa"},
-    "go": {"en": "Explore", "pt": "Explorar"},
     "links": {
         "finder": {"en": "Find players", "pt": "Pesquisar jogadores"},
         "value": {"en": "Value Finder", "pt": "Valor de mercado"},
@@ -224,25 +224,28 @@ def _table(df: pd.DataFrame, extra: dict[str, pd.Series]) -> pd.DataFrame:
     return pd.DataFrame({**base, **extra}).reset_index(drop=True)
 
 
-money_col = st.column_config.NumberColumn(format="€%,.0f")
+money_col = col.money("market_value", lang, tr(TEXT["value"], lang))
 age_col = st.column_config.NumberColumn(format="%.1f")
+score_col = col.number("performance_score", lang, "%.0f")
+share_name = tr(TEXT["share"], lang)
 young = regulars[regulars["age"] < 23].sort_values("minutes_share", ascending=False).head(TOP_N)
 tabs[0].dataframe(
-    _table(
-        young,
-        {
-            tr(TEXT["share"], lang): young["minutes_share"],
-            tr(TEXT["value"], lang): young["market_value_end"],
-        },
+    col.as_percent(
+        _table(
+            young,
+            {
+                share_name: young["minutes_share"],
+                tr(TEXT["value"], lang): young["market_value_end"],
+            },
+        ),
+        [share_name],
     ),
     hide_index=True,
     width="stretch",
     column_config={
         tr(TEXT["age"], lang): age_col,
         tr(TEXT["value"], lang): money_col,
-        tr(TEXT["share"], lang): st.column_config.ProgressColumn(
-            format="percent", min_value=0, max_value=1
-        ),
+        share_name: col.share("minutes_share", lang),
     },
 )
 cheap = (
@@ -264,8 +267,8 @@ tabs[1].dataframe(
     column_config={
         tr(TEXT["age"], lang): age_col,
         tr(TEXT["value"], lang): money_col,
-        tr(TEXT["score"], lang): st.column_config.NumberColumn(format="%.0f"),
-        tr(TEXT["ratio"], lang): st.column_config.NumberColumn(format="%.2fx"),
+        tr(TEXT["score"], lang): score_col,
+        tr(TEXT["ratio"], lang): col.number("value_ratio", lang, "%.2fx"),
     },
 )
 ending = (
@@ -287,13 +290,13 @@ tabs[2].dataframe(
     column_config={
         tr(TEXT["age"], lang): age_col,
         tr(TEXT["value"], lang): money_col,
-        tr(TEXT["score"], lang): st.column_config.NumberColumn(format="%.0f"),
+        tr(TEXT["score"], lang): score_col,
     },
 )
 
-cols = st.columns(4)
-for col, key in zip(cols, ["finder", "value", "potential", "quality"], strict=True):
-    col.page_link(PAGES[key], label=f"{tr(TEXT['go'], lang)}: {tr(TEXT['links'][key], lang)}")
+link_cols = st.columns(4)
+for link_col, key in zip(link_cols, ["finder", "value", "potential", "quality"], strict=True):
+    link_col.page_link(PAGES[key], label=f"{tr(TEXT['links'][key], lang)} →")
 
 c.status_board(
     status_board(

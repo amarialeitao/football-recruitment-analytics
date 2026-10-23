@@ -8,12 +8,13 @@ import streamlit as st
 
 from scouting.health import status_board
 from scouting.quality import FIELD_LABELS
+from scouting.ui import columns as col
 from scouting.ui import components as c
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector
 from scouting.ui.i18n import num
 from scouting.ui.players import season_label, tr
-from scouting.ui.theme import ATTENTION, CATEGORICAL, MUTED, PRIMARY
+from scouting.ui.theme import ATTENTION, MUTED, PRIMARY, sequential_shades
 
 TEXT = {
     "title": {"en": "Data Quality", "pt": "Qualidade dos dados"},
@@ -136,6 +137,7 @@ cov["league"] = cov["competition_id"].map(settings.scope.competitions)
 latest = cov[cov["season"] == cov["season"].max()]
 smallest = latest.sort_values("players_min_minutes").iloc[0]["league"]
 fig = go.Figure()
+shades = sequential_shades(cov["season"].nunique())
 for i, (season, part) in enumerate(cov.groupby("season")):
     part = part.sort_values("players_min_minutes", ascending=False)
     fig.add_trace(
@@ -143,7 +145,7 @@ for i, (season, part) in enumerate(cov.groupby("season")):
             x=part["league"],
             y=part["players_min_minutes"],
             name=season_label(int(season)),
-            marker={"color": CATEGORICAL[i % len(CATEGORICAL)]},
+            marker={"color": shades[i]},
         )
     )
 fig.update_layout(
@@ -232,9 +234,9 @@ st.dataframe(
     hide_index=True,
     width="stretch",
     column_config={
-        tr(TEXT["squad"], lang): st.column_config.NumberColumn(format="€%,.0f"),
-        tr(TEXT["index"], lang): st.column_config.NumberColumn(format="%.0f"),
-        tr(TEXT["eu_ppg"], lang): st.column_config.NumberColumn(format="%.2f"),
+        tr(TEXT["squad"], lang): col.money("squad_value", lang, tr(TEXT["squad"], lang)),
+        tr(TEXT["index"], lang): col.number("strength_index", lang, "%.0f"),
+        tr(TEXT["eu_ppg"], lang): col.number("eu_ppg", lang, "%.2f"),
     },
 )
 

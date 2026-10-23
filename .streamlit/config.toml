@@ -1,10 +1,20 @@
-# Neutral theme (colours mirror src/scouting/ui/theme.py).
+# Casa Pia colours: black and white with a red accent (values mirror src/scouting/ui/theme.py).
 [theme]
 base = "light"
-primaryColor = "#2F6F8F"
+primaryColor = "#D2261C"
 backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F5F7FA"
-textColor = "#1F2933"
+secondaryBackgroundColor = "#F5F5F5"
+textColor = "#141414"
+
+[theme.sidebar]
+backgroundColor = "#141414"
+secondaryBackgroundColor = "#2A2A2A"
+textColor = "#FFFFFF"
+primaryColor = "#D2261C"
+
+[client]
+# Hide the developer menu (Deploy, Rerun, Settings) from people viewing the app.
+toolbarMode = "viewer"
 
 [browser]
 gatherUsageStats = false

@@ -198,7 +198,8 @@ def test_percentile_profile_bars_and_comparison(ps: pd.DataFrame) -> None:
         ranked.iloc[0], keys, "pt", title="T", compare=ranked.iloc[1], names=("A", "B")
     )
     assert len(two.data) == 2
-    assert two.layout.xaxis.title.text == "Percentil"
+    assert two.layout.xaxis.title.text.startswith("Percentil vs")
+    assert "100 = melhor" in two.layout.xaxis.title.text
 
 
 def test_value_trajectory_and_minutes_charts() -> None:
@@ -220,3 +221,28 @@ def test_value_trajectory_and_minutes_charts() -> None:
     )
     bars = charts.minutes_by_season(rows, "en", title="M")
     assert list(bars.data[0].text) == ["20%", "60%"]
+
+
+def test_sequential_shades_end_on_black() -> None:
+    from scouting.ui.theme import INK, sequential_shades
+
+    assert sequential_shades(3)[-1] == INK
+    assert len(sequential_shades(3)) == 3
+    assert sequential_shades(6) == [INK] * 6
+
+
+def test_column_help_exists_in_both_languages() -> None:
+    from scouting.ui.columns import HELP, help_text
+
+    for key, texts in HELP.items():
+        assert set(texts) == {"en", "pt"}, key
+    assert "1,800" in help_text("confidence", "en", medium=900, high=1800)
+
+
+def test_as_percent_does_not_change_the_source() -> None:
+    from scouting.ui.columns import as_percent
+
+    df = pd.DataFrame({"share": [0.5, 0.9395]})
+    out = as_percent(df, ["share"])
+    assert out["share"].tolist() == [50.0, 93.95]
+    assert df["share"].tolist() == [0.5, 0.9395]

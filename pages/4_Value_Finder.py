@@ -8,6 +8,7 @@ import streamlit as st
 
 from scouting.insights import POSITION_LABEL
 from scouting.metrics.catalog import PROFILE_METRICS, metric
+from scouting.ui import columns as col
 from scouting.ui import components as c
 from scouting.ui.data import setup_page
 from scouting.ui.filters import POSITION_ORDER, language_selector, sidebar_filters
@@ -85,7 +86,7 @@ c.page_header(tr(TEXT["title"], lang), tr(TEXT["question"], lang))
 groups = [g for g in POSITION_ORDER if g in filters.positions] or POSITION_ORDER
 col1, col2 = st.columns([1, 2])
 group = col1.selectbox(tr(TEXT["group"], lang), groups, format_func=lambda g: t(g, lang))
-threshold = col2.slider(tr(TEXT["threshold"], lang), 0.3, 1.0, 0.5, 0.05)
+threshold = col2.slider(tr(TEXT["threshold"], lang), 0.3, 1.0, 0.5, 0.05, format="percent")
 
 pool = selection[
     (selection["position_group"] == group)
@@ -170,16 +171,17 @@ thresholds = (
 )
 table = pd.DataFrame(
     {
+        # The answer first (how cheap, for what output), then who and where.
         tr(TEXT["name"], lang): flagged["name"],
+        tr(TEXT["ratio"], lang): flagged["value_ratio"],
+        tr(TEXT["value"], lang): flagged["market_value_end"],
+        tr(TEXT["expected"], lang): flagged["expected_market_value"],
+        tr(TEXT["score"], lang): flagged["performance_score"],
         tr(TEXT["club"], lang): flagged["club_name"],
         tr(TEXT["league"], lang): flagged["competition_name"],
         tr(TEXT["position"], lang): flagged["sub_position"].map(lambda p: position_label(p, lang)),
         tr(TEXT["age"], lang): flagged["age"],
         tr(TEXT["minutes"], lang): flagged["minutes"],
-        tr(TEXT["score"], lang): flagged["performance_score"],
-        tr(TEXT["value"], lang): flagged["market_value_end"],
-        tr(TEXT["expected"], lang): flagged["expected_market_value"],
-        tr(TEXT["ratio"], lang): flagged["value_ratio"],
         tr(TEXT["confidence"], lang): [
             t(f"confidence_{confidence_for_minutes(m, thresholds)}", lang)
             for m in flagged["minutes"]
@@ -194,11 +196,15 @@ event = st.dataframe(
     on_select="rerun",
     selection_mode="single-row",
     column_config={
+        tr(TEXT["name"], lang): st.column_config.TextColumn(pinned=True),
         tr(TEXT["age"], lang): st.column_config.NumberColumn(format="%.1f"),
-        tr(TEXT["score"], lang): st.column_config.NumberColumn(format="%.0f"),
-        tr(TEXT["value"], lang): st.column_config.NumberColumn(format="€%,.0f"),
-        tr(TEXT["expected"], lang): st.column_config.NumberColumn(format="€%,.0f"),
-        tr(TEXT["ratio"], lang): st.column_config.NumberColumn(format="%.2fx"),
+        tr(TEXT["score"], lang): col.number("performance_score", lang, "%.0f"),
+        tr(TEXT["value"], lang): col.money("market_value", lang, tr(TEXT["value"], lang)),
+        tr(TEXT["expected"], lang): col.money("expected_value", lang, tr(TEXT["expected"], lang)),
+        tr(TEXT["ratio"], lang): col.number("value_ratio", lang, "%.2fx"),
+        tr(TEXT["confidence"], lang): col.text(
+            "confidence", lang, medium=thresholds[0], high=thresholds[1]
+        ),
     },
 )
 rows = event.selection.rows if event and event.selection else []

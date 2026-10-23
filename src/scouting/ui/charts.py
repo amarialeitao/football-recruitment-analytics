@@ -54,11 +54,24 @@ def percentile_profile(
     add(row, first, PRIMARY)
     if compare is not None:
         add(compare, second, PRIMARY_SOFT, line=PRIMARY)
-    fig.add_vline(x=50, line_dash="dot", line_color=MUTED, line_width=1)
+    fig.add_vline(
+        x=50,
+        line_dash="dot",
+        line_color=MUTED,
+        line_width=1,
+        annotation_text="median" if lang == "en" else "mediana",
+        annotation_position="top",
+        annotation_font={"size": 11, "color": MUTED},
+    )
+    axis_title = (
+        "Percentile vs players in the same position (100 = best)"
+        if lang == "en"
+        else "Percentil vs jogadores da mesma posição (100 = melhor)"
+    )
     fig.update_layout(
         title=title,
         barmode="group",
-        xaxis={"range": [0, 108], "title": "Percentile" if lang == "en" else "Percentil"},
+        xaxis={"range": [0, 108], "title": axis_title},
         yaxis={"title": None},
         height=110 + 48 * len(keys) * (2 if compare is not None else 1),
         showlegend=compare is not None,

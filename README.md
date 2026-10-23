@@ -60,6 +60,12 @@ Seven pages, all sharing the same filters (season, leagues, positions, age, minu
 - **Data Quality**: coverage per league, completeness of key fields and a status board, so the
   person reading the other pages knows what the data can and cannot carry.
 
+**Designed to be read, not decoded.** Every table formats numbers the same way (€2.5M, 94%),
+puts the answer in the first columns and explains each metric when you hover its header.
+Charts mark what matters: the median on percentile bars, the threshold on the Value Finder.
+The interface uses Casa Pia's black, white and red, with red kept for highlights only (the
+focus league, flagged players), and a note in the sidebar that the project is independent.
+
 | Player Profile | Similar Players | Value Finder |
 | --- | --- | --- |
 | ![Player Profile](docs/screenshots/player-profile.png) | ![Similar Players](docs/screenshots/similar-players.png) | ![Value Finder](docs/screenshots/value-finder.png) |

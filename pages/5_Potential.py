@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from scouting.metrics.potential import STRONG_PERCENTILE, STRONG_VALUE_GROWTH, potential_signals
+from scouting.ui import columns as col
 from scouting.ui import components as c
 from scouting.ui.data import setup_page
 from scouting.ui.filters import apply_filters, language_selector, sidebar_filters
@@ -33,6 +34,7 @@ TEXT = {
         "pt": "% dos minutos da equipa, percentil vs mesma idade e posição",
     },
     "signals": {"en": "{n} signals", "pt": "{n} sinais"},
+    "signal_one": {"en": "1 signal", "pt": "1 sinal"},
     "how": {
         "en": "Each dot is a young player. Height: how much he plays compared with regulars "
         "(players above the minimum minutes) of the same age and position group (percentile, "
@@ -71,8 +73,14 @@ TEXT = {
     "position": {"en": "Position", "pt": "Posição"},
     "age": {"en": "Age", "pt": "Idade"},
     "share": {"en": "Share of team minutes", "pt": "% dos minutos da equipa"},
-    "min_pct": {"en": "Minutes for age (pct)", "pt": "Minutos para a idade (pct)"},
-    "start_pct": {"en": "Starts for age (pct)", "pt": "Titularidades para a idade (pct)"},
+    "min_pct": {
+        "en": "Minutes vs same age (percentile)",
+        "pt": "Minutos vs mesma idade (percentil)",
+    },
+    "start_pct": {
+        "en": "Starts vs same age (percentile)",
+        "pt": "Titularidades vs mesma idade (percentil)",
+    },
     "growth": {"en": "Value change in season", "pt": "Variação do valor na época"},
     "value": {"en": "Market value", "pt": "Valor de mercado"},
     "n_signals": {"en": "Signals", "pt": "Sinais"},
@@ -120,7 +128,7 @@ for n in range(4):
             x=part["age"],
             y=part["minutes_for_age_pct"],
             mode="markers",
-            name=tr(TEXT["signals"], lang).format(n=n),
+            name=tr(TEXT["signal_one"], lang) if n == 1 else tr(TEXT["signals"], lang).format(n=n),
             marker={
                 "color": SIGNAL_COLORS[n],
                 "size": 6 + 3 * n,
@@ -162,30 +170,30 @@ table = pd.DataFrame(
         tr(TEXT["league"], lang): ordered["competition_name"],
         tr(TEXT["position"], lang): ordered["sub_position"].map(lambda p: position_label(p, lang)),
         tr(TEXT["age"], lang): ordered["age"],
+        tr(TEXT["n_signals"], lang): ordered["signals_met"],
         tr(TEXT["share"], lang): ordered["minutes_share"],
         tr(TEXT["min_pct"], lang): ordered["minutes_for_age_pct"],
         tr(TEXT["start_pct"], lang): ordered["start_rate_for_age_pct"],
         tr(TEXT["growth"], lang): ordered["value_growth"],
         tr(TEXT["value"], lang): ordered["market_value_end"],
-        tr(TEXT["n_signals"], lang): ordered["signals_met"],
     }
 )
 st.caption(tr(TEXT["table_caption"], lang))
 event = st.dataframe(
-    table,
+    col.as_percent(table, [tr(TEXT["share"], lang), tr(TEXT["growth"], lang)]),
     hide_index=True,
     width="stretch",
     on_select="rerun",
     selection_mode="single-row",
     column_config={
+        tr(TEXT["name"], lang): st.column_config.TextColumn(pinned=True),
         tr(TEXT["age"], lang): st.column_config.NumberColumn(format="%.1f"),
-        tr(TEXT["share"], lang): st.column_config.ProgressColumn(
-            format="percent", min_value=0, max_value=1
-        ),
-        tr(TEXT["min_pct"], lang): st.column_config.NumberColumn(format="%.0f"),
-        tr(TEXT["start_pct"], lang): st.column_config.NumberColumn(format="%.0f"),
-        tr(TEXT["growth"], lang): st.column_config.NumberColumn(format="percent"),
-        tr(TEXT["value"], lang): st.column_config.NumberColumn(format="€%,.0f"),
+        tr(TEXT["n_signals"], lang): col.number("signals", lang, "%d"),
+        tr(TEXT["share"], lang): col.share("minutes_share", lang),
+        tr(TEXT["min_pct"], lang): col.number("minutes_for_age", lang, "%.0f"),
+        tr(TEXT["start_pct"], lang): col.number("starts_for_age", lang, "%.0f"),
+        tr(TEXT["growth"], lang): col.number("value_growth", lang, "%+.0f%%"),
+        tr(TEXT["value"], lang): col.money("market_value", lang, tr(TEXT["value"], lang)),
     },
 )
 rows = event.selection.rows if event and event.selection else []

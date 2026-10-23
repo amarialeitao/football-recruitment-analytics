@@ -8,6 +8,7 @@ import streamlit as st
 from scouting.metrics.catalog import PROFILE_METRICS, metric
 from scouting.metrics.similarity import find_similar
 from scouting.ui import charts
+from scouting.ui import columns as col
 from scouting.ui import components as c
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
@@ -147,10 +148,11 @@ event = st.dataframe(
     on_select="rerun",
     selection_mode="single-row",
     column_config={
+        tr(TEXT["name"], lang): st.column_config.TextColumn(pinned=True),
         tr(TEXT["age"], lang): st.column_config.NumberColumn(format="%.1f"),
-        tr(TEXT["value"], lang): st.column_config.NumberColumn(format="€%,.0f"),
+        tr(TEXT["value"], lang): col.money("market_value", lang, tr(TEXT["value"], lang)),
         tr(TEXT["similarity"], lang): st.column_config.ProgressColumn(
-            format="%.0f", min_value=0, max_value=100
+            format="%.0f", min_value=0, max_value=100, help=col.help_text("similarity", lang)
         ),
     },
 )

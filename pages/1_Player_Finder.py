@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from scouting.metrics.catalog import metric
+from scouting.ui import columns as col
 from scouting.ui import components as c
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
@@ -28,7 +29,7 @@ TEXT = {
     "contract": {"en": "Contract ends by", "pt": "Contrato termina até"},
     "any": {"en": "Any", "pt": "Qualquer"},
     "sort": {"en": "Sort by", "pt": "Ordenar por"},
-    "players": {"en": "Players in shortlist", "pt": "Jogadores na lista"},
+    "players": {"en": "Players matching the filters", "pt": "Jogadores que cumprem os filtros"},
     "median_age": {"en": "Median age", "pt": "Idade mediana"},
     "median_value": {"en": "Median market value", "pt": "Valor de mercado mediano"},
     "expiring": {
@@ -131,26 +132,26 @@ thresholds = (
 )
 table = build_table(shortlist, lang, thresholds)
 st.caption(tr(TEXT["pick"], lang))
+share_name = metric("minutes_share").label_for(lang)
 event = st.dataframe(
-    table,
+    col.as_percent(table, [share_name]),
     hide_index=True,
     width="stretch",
     on_select="rerun",
     selection_mode="single-row",
     column_config={
+        tr(TEXT["name"], lang): st.column_config.TextColumn(pinned=True),
         tr(TEXT["age"], lang): st.column_config.NumberColumn(format="%.1f"),
         tr(TEXT["minutes"], lang): st.column_config.NumberColumn(format="%d"),
-        metric("goal_contributions_p90").label_for(lang): st.column_config.NumberColumn(
-            format="%.2f"
+        metric("goal_contributions_p90").label_for(lang): col.number(
+            "goal_contributions_p90", lang, "%.2f"
         ),
-        metric("plus_minus_on_p90").label_for(lang): st.column_config.NumberColumn(format="%+.2f"),
-        metric("minutes_share").label_for(lang): st.column_config.ProgressColumn(
-            format="percent", min_value=0, max_value=1
-        ),
-        tr(TEXT["value"], lang): st.column_config.NumberColumn(format="€%,.0f"),
-        tr(TEXT["value_ratio"], lang): st.column_config.NumberColumn(
-            format="%.2fx",
-            help="Market value / expected value for similar output, age and league.",
+        metric("plus_minus_on_p90").label_for(lang): col.number("plus_minus_on_p90", lang, "%+.2f"),
+        share_name: col.share("minutes_share", lang),
+        tr(TEXT["value"], lang): col.money("market_value", lang, tr(TEXT["value"], lang)),
+        tr(TEXT["value_ratio"], lang): col.number("value_ratio", lang, "%.2fx"),
+        tr(TEXT["confidence"], lang): col.text(
+            "confidence", lang, medium=thresholds[0], high=thresholds[1]
         ),
     },
 )
