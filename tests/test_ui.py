@@ -121,6 +121,8 @@ def test_build_app_data_from_extract(source_db: Path, tmp_path: Path) -> None:
     assert "value_ratio" in data.players.columns
     assert data.players["competition_name"].iloc[0] == "Liga Portugal"
     assert data.seasons == [2025]
+    assert set(data.valuations["player_id"]) <= {10, 11}
+    assert data.valuations["date"].is_monotonic_increasing
     assert data.quality.games == 1
     assert data.data_cutoff == pd.Timestamp("2025-09-01")
 
@@ -178,3 +180,43 @@ def test_language_toggle_switches_texts() -> None:
     at.run()
     assert not at.exception
     assert at.sidebar.button[0].label == "Limpar filtros"
+
+
+# --- shared charts -----------------------------------------------------------------------------
+
+
+def test_percentile_profile_bars_and_comparison(ps: pd.DataFrame) -> None:
+    from scouting.metrics.percentiles import percentile_ranks
+    from scouting.ui import charts
+
+    ranked = percentile_ranks(ps, min_minutes=0)
+    keys = ["goals_p90", "assists_p90"]
+    one = charts.percentile_profile(ranked.iloc[0], keys, "en", title="T")
+    assert len(one.data) == 1 and len(one.data[0].x) == 2
+    assert max(one.data[0].x) <= 100
+    two = charts.percentile_profile(
+        ranked.iloc[0], keys, "pt", title="T", compare=ranked.iloc[1], names=("A", "B")
+    )
+    assert len(two.data) == 2
+    assert two.layout.xaxis.title.text == "Percentil"
+
+
+def test_value_trajectory_and_minutes_charts() -> None:
+    from scouting.ui import charts
+
+    vals = pd.DataFrame(
+        {"date": pd.to_datetime(["2024-01-01", "2025-01-01"]), "market_value_in_eur": [1e6, 2e6]}
+    )
+    fig = charts.value_trajectory(vals, "en", title="V", season=2025)
+    assert list(fig.data[0].y) == [1e6, 2e6]
+    rows = pd.DataFrame(
+        {
+            "season": [2024, 2025],
+            "competition_id": ["AA1", "AA1"],
+            "competition_name": ["League A", "League A"],
+            "minutes": [500, 1500],
+            "minutes_share": [0.2, 0.6],
+        }
+    )
+    bars = charts.minutes_by_season(rows, "en", title="M")
+    assert list(bars.data[0].text) == ["20%", "60%"]

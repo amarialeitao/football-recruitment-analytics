@@ -64,12 +64,26 @@ def find_row(df: pd.DataFrame, key: tuple[int, int, str] | None) -> pd.Series | 
     return None if rows.empty else rows.iloc[0]
 
 
-def player_selector(candidates: pd.DataFrame, lang: Lang, *, label: str) -> pd.Series | None:
-    """Searchable select box over ``candidates``; remembers the choice across pages."""
+def player_selector(
+    candidates: pd.DataFrame,
+    lang: Lang,
+    *,
+    label: str,
+    prefer_competition: str | None = None,
+) -> pd.Series | None:
+    """Searchable select box over ``candidates``; remembers the choice across pages.
+
+    Without a remembered player, the default is the outfield player with most minutes in
+    ``prefer_competition`` (the focus league).
+    """
     if candidates.empty:
         st.info(t("no_data", lang))
         return None
-    ordered = candidates.sort_values("minutes", ascending=False)
+    focus = candidates["competition_id"].eq(prefer_competition) if prefer_competition else False
+    outfield = candidates["position_group"].ne("Goalkeeper")
+    ordered = candidates.assign(_focus=focus, _outfield=outfield).sort_values(
+        ["_focus", "_outfield", "minutes"], ascending=False
+    )
     keys = [player_key(r) for _, r in ordered.iterrows()]
     labels = {k: player_label(r) for k, (_, r) in zip(keys, ordered.iterrows(), strict=True)}
     remembered = st.session_state.get(SELECTED_KEY)

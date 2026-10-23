@@ -32,6 +32,7 @@ class DataNotReadyError(RuntimeError):
 @dataclass(frozen=True)
 class AppData:
     players: pd.DataFrame  # player x season x competition, with percentiles and value columns
+    valuations: pd.DataFrame  # market value history of those players
     league_strength: pd.DataFrame
     coverage: pd.DataFrame
     quality: QualitySummary
@@ -72,8 +73,13 @@ def build_app_data(settings: Settings, *, today: pd.Timestamp) -> AppData:
     strength = strength.assign(competition_name=strength["competition_id"].map(names))
 
     manifest = json.loads((extract_dir / "manifest.json").read_text(encoding="utf-8"))
+    valuations = tables.player_valuations.loc[
+        tables.player_valuations["player_id"].isin(players["player_id"]),
+        ["player_id", "date", "market_value_in_eur"],
+    ].sort_values(["player_id", "date"])
     return AppData(
         players=enriched,
+        valuations=valuations.reset_index(drop=True),
         league_strength=strength,
         coverage=coverage(tables, players, min_minutes),
         quality=summarize(tables, enriched, min_minutes=min_minutes, today=today),
