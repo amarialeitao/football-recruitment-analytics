@@ -210,3 +210,15 @@ def test_sort_insights_puts_observations_then_confident_first() -> None:
     b = ins.Insight("b", {"en": "", "pt": ""}, "high")
     c = ins.Insight("c", {"en": "", "pt": ""}, "medium", kind="observation")
     assert [i.key for i in ins.sort_insights([a, b, c])] == ["c", "b", "a"]
+
+
+def test_weakness_never_says_worse_than_100_percent() -> None:
+    from scouting.insights import _weakness
+
+    row = pd.Series({"position_group": "Defender", "plus_minus_on_p90": -1.7})
+    worst = _weakness(row, "plus_minus_on_p90", 0.0, "medium", 1530, 711)
+    assert "worse than 99% of defenders" in worst.render("en")
+    assert "pior que 99% dos defesas" in worst.render("pt")
+    assert "worse than 80%" in _weakness(row, "plus_minus_on_p90", 20.0, "high", 3000, 711).render(
+        "en"
+    )

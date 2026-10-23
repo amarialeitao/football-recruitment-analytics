@@ -223,7 +223,9 @@ def _strength(row, key, pct, conf, minutes, n) -> Insight:
 
 def _weakness(row, key, pct, conf, minutes, n) -> Insight:
     m = metric(key)
-    better_than = round(100 - pct)  # share of peers with a better value
+    # Share of peers with a better value; capped at 99 so the worst player never reads as
+    # "worse than 100%" (he cannot be worse than himself), mirroring "never top 0%".
+    better_than = min(99, round(100 - pct))
     group = row["position_group"]
     en_pos, pt_pos = POSITION_LABEL["en"][group], POSITION_LABEL["pt"][group]
     en = f"{m.label}: worse than {better_than}% of {en_pos}"
