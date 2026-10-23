@@ -9,8 +9,18 @@ recruitment at Casa Pia AC. I wanted to show the work the role involves, not onl
 taking open data, turning it into metrics a scout can use, and explaining the result to someone
 who has five minutes and a decision to make.
 
-**Live demo:** [football-recruitment-analytics.streamlit.app](https://football-recruitment-analytics.streamlit.app)
-(free hosting: if it has been idle, it takes a minute to wake up).
+## Start here (30 seconds)
+
+- **What it is:** a bilingual scouting app for a club that has to buy cheaply: find players in
+  eight leagues, compare them with their peers, and see how much evidence is behind each number.
+- **Try it:** [live demo](https://football-recruitment-analytics.streamlit.app). Free hosting, so
+  give it a minute to wake up if nobody has used it for a while.
+- **See it answer a real question:** [a striker for under €1m](docs/case-study-2.md), to
+  replace a 36-year-old whose output fell sharply (and [a right-back](docs/case-study.md)).
+- **Does the model work?** [Tested on past seasons](docs/backtest.md): yes, but modestly. It
+  says whom to watch first, not whom to buy.
+- **What a scout would send on:** a [one-page player report](docs/sample-report.pdf),
+  downloadable from any player's profile.
 
 ![Market Overview](docs/screenshots/market-overview.png)
 
@@ -41,7 +51,7 @@ That shaped three decisions:
 | Metrics and models for performance and potential | Per-90 and on-pitch metrics, percentiles by position, a market value model [tested on past seasons](docs/backtest.md), potential signals ([methodology](docs/methodology.md)) |
 | Internal tools, pipelines and automated workflows | A reproducible pipeline from a pinned, checksummed download to a tested analysis table, with CI on every push to main and every pull request |
 | Practical use of AI | An optional AI scouting-notes feature with number checking, and an honest account of how I used a coding assistant ([below](#how-i-used-ai)) |
-| Turn complex data into simple insights | Automatic insights in plain language, each with a confidence level and the observed data behind it |
+| Turn complex data into simple insights | Automatic insights in plain language, each with a confidence level and the observed data behind it; a step-by-step guide and a glossary in the app |
 | Portuguese and English | The whole interface switches between English and Portuguese |
 
 ## What the app does
@@ -187,6 +197,24 @@ Full details, with the reasoning behind each choice, are in
 - **Potential:** signals, not predictions. Minutes and starts compared with regulars of the same
   age, plus market value growth.
 
+## Glossary
+
+The same definitions are in the app, at the bottom of the sidebar on every page.
+
+- **Regular**: A player with at least 900 league minutes in the season (about 10 full games). Only regulars are compared, because a few good games prove little.
+- **Per 90**: Per 90 minutes played, so a player with 1,000 minutes and one with 3,000 can be compared fairly.
+- **Percentile**: Where a player ranks among regulars of the same position group in the same season, across all eight leagues: 90 means better than 90% of them. 100 is always best, so for cards and goals conceded a high percentile means fewer.
+- **Median**: The middle value: half the players are above it, half below. Used instead of the average so a few extreme values do not distort it.
+- **Share of team minutes**: The share of all the league minutes his team played that he was on the pitch: the clearest public sign of how much a coach trusts him.
+- **On-pitch goal difference**: Goals his team scored minus goals it conceded while he was on the pitch, per 90 minutes. It reflects the team as much as the player.
+- **Confidence**: How much evidence is behind a number: high from 1,800 minutes, medium from 900, low below. When several samples are involved, the weakest decides.
+- **Performance score**: The average of a player's percentiles for his position, from 0 to 100. 50 is a typical regular. It measures output and trust with public data, not overall quality.
+- **Market value**: Transfermarkt's crowd estimate of what a player is worth. It is not a transfer fee and can be out of date.
+- **Value vs expected**: Market value divided by what players with similar output, age and league are usually valued at. Below 1.00x is cheaper than usual; 0.50x is half the usual price. Tested on past seasons: a starting point for scouting, not a prediction.
+- **League level**: The average squad value of a league's clubs, with Liga Portugal = 100. A rough guide to how big a step a move between leagues is.
+- **Similarity**: How close two players' statistical profiles are, from 0 to 100: 100 is identical and a typical pair of players scores about 30. Similar role, not necessarily similar quality.
+- **Potential signals**: For players aged 23 or under: plays a lot for his age, starts a lot for his age, and market value rising. Signals to look closer, not predictions.
+
 ## Limitations
 
 I would rather a scout knew these before using the tool than after:
@@ -308,10 +336,11 @@ src/scouting/
   quality.py, health.py data-quality checks and the status board
   case_study.py         the rule-based shortlist used in the case studies
   report.py             one-page player report (HTML, prints to PDF)
+  glossary.py           every term explained once, in both languages
   llm_notes.py          optional AI scouting notes
   ui/                   theme, translations, filters, charts, table columns, shortlist, shared components
 tests/                  synthetic data only; no real player data in the tests
-docs/                   methodology, case studies, backtest, screenshots
+docs/                   methodology, case studies, backtest, sample report, screenshots
 ```
 
 ## About this project

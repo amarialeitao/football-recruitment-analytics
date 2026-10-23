@@ -14,6 +14,7 @@ from scouting.ui import components as c
 from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import num, position_label
 from scouting.ui.players import go_to, player_key, season_label, tr
 
@@ -97,7 +98,7 @@ min_minutes = settings.analysis.min_minutes
 listed = sl.rows(data.players).reset_index(drop=True)
 if listed.empty:
     st.info(tr(TEXT["empty"], lang))
-    st.stop()
+    end_page()
 
 # --- the list --------------------------------------------------------------------------------
 table = pd.DataFrame(

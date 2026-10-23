@@ -13,6 +13,7 @@ from scouting.ui import components as c
 from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import POSITION_ORDER, language_selector, sidebar_filters
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import num, position_label, t
 from scouting.ui.players import confidence_for_minutes, go_to, money, season_label, tr
 from scouting.ui.theme import ACCENT, NEUTRAL_SERIES
@@ -122,7 +123,7 @@ pool = selection[
 ]
 if pool.empty:
     st.info(tr(TEXT["none"], lang))
-    st.stop()
+    end_page()
 
 flagged = pool[pool["value_ratio"] <= threshold].sort_values("value_ratio")
 fit_r2 = pool["fit_r2"].dropna()
@@ -202,7 +203,7 @@ c.chart_block(
 )
 
 if flagged.empty:
-    st.stop()
+    end_page()
 
 thresholds = (
     settings.analysis.confidence_minutes.medium,

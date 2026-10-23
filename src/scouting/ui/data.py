@@ -15,6 +15,7 @@ import streamlit as st
 from scouting.app_data import AppData, DataNotReadyError, build_app_data
 from scouting.config import ConfigError, Settings, load_settings
 from scouting.ingest.demo_data import ENV_VAR, DemoDataError, ensure_demo_data
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import t
 from scouting.ui.theme import CSS, register_plotly_template
 
@@ -66,5 +67,5 @@ def setup_page(title: str) -> tuple[Settings, AppData]:
         requests.RequestException,
     ) as error:
         st.error(f"**{t('data_not_ready', lang)}**\n\n{error}")
-        st.stop()
+        end_page()
     return settings, data

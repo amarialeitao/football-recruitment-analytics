@@ -13,6 +13,7 @@ from scouting.ui import components as c
 from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import num, position_label, t
 from scouting.ui.players import go_to, money, player_label, player_selector, season_label, tr
 
@@ -85,7 +86,7 @@ reference = player_selector(
     prefer_competition=settings.scope.focus_competition,
 )
 if reference is None:
-    st.stop()
+    end_page()
 
 min_minutes = settings.analysis.min_minutes
 if reference["minutes"] < min_minutes:
@@ -126,7 +127,7 @@ results = results[results["age"].isna() | (results["age"] >= filters.age_range[0
 
 if results.empty:
     st.info(tr(TEXT["none"], lang))
-    st.stop()
+    end_page()
 
 table = pd.DataFrame(
     {

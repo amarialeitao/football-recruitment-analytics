@@ -12,6 +12,7 @@ from scouting.ui import components as c
 from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import apply_filters, language_selector, sidebar_filters
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import num, position_label
 from scouting.ui.players import go_to, season_label, tr
 from scouting.ui.theme import ACCENT, NEUTRAL_SERIES, PRIMARY, PRIMARY_SOFT
@@ -122,7 +123,7 @@ signals = potential_signals(
 shown = apply_filters(signals, filters)
 if shown.empty:
     st.info(tr(TEXT["none"], lang))
-    st.stop()
+    end_page()
 
 strong = shown[shown["signals_met"] >= 2]
 c.kpi_row(

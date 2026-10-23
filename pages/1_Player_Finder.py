@@ -11,6 +11,7 @@ from scouting.ui import components as c
 from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import num, position_label
 from scouting.ui.players import (
     confidence_for_minutes,
@@ -127,7 +128,7 @@ shortlist = shortlist.sort_values(sort_key, ascending=False)
 
 if shortlist.empty:
     st.info(c.t("no_data", lang))
-    st.stop()
+    end_page()
 
 expiring = (shortlist["contract_expiration_date"] <= next_summer).mean()
 c.kpi_row(

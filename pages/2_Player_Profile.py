@@ -16,6 +16,7 @@ from scouting.ui import shortlist as sl
 from scouting.ui.ai_note import ai_note_block
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
+from scouting.ui.flow import end_page
 from scouting.ui.i18n import num, position_label, t
 from scouting.ui.players import (
     confidence_for_minutes,
@@ -159,7 +160,7 @@ row = player_selector(
     prefer_competition=settings.scope.focus_competition,
 )
 if row is None:
-    st.stop()
+    end_page()
 
 min_minutes = settings.analysis.min_minutes
 thresholds = (

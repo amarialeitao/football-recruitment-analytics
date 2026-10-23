@@ -94,6 +94,66 @@ TEXT = {
     "ratio": {"en": "Value vs expected", "pt": "Valor vs esperado"},
     "contract": {"en": "Contract end", "pt": "Fim de contrato"},
     "share": {"en": "Share of team minutes", "pt": "% dos minutos da equipa"},
+    "guide_title": {
+        "en": "New here? How to use this app (2 minutes)",
+        "pt": "Primeira visita? Como usar a aplicação (2 minutos)",
+    },
+    "guide_intro": {
+        "en": "The pages follow a scouting workflow. The sidebar filters (season, leagues, "
+        "positions, age, minutes, budget) apply everywhere.",
+        "pt": "As páginas seguem o fluxo de trabalho de scouting. Os filtros da barra lateral "
+        "(época, ligas, posições, idade, minutos, orçamento) aplicam-se a todas.",
+    },
+    "guide_steps": {
+        "en": [
+            ("finder", "**Find** players who fit the brief and your budget."),
+            (
+                "profile",
+                "**Profile** one player: what he brings against his peers, how it "
+                "changed since last season, and how sure we can be.",
+            ),
+            ("similar", "**Replace** a player who is leaving: who plays a similar role."),
+            ("value", "**Spot value**: players valued low for their output, age and league."),
+            ("potential", "**Look young**: under-23s already trusted by their coaches."),
+            (
+                "shortlist",
+                "**Shortlist and compare**: add players from any page, compare three "
+                "side by side, then download a one-page report from the profile to share.",
+            ),
+        ],
+        "pt": [
+            ("finder", "**Encontrar** jogadores que cumprem o perfil e o orçamento."),
+            (
+                "profile",
+                "**Analisar** um jogador: o que traz face aos pares, como mudou desde "
+                "a época anterior e quão certos podemos estar.",
+            ),
+            ("similar", "**Substituir** um jogador que sai: quem tem um papel parecido."),
+            ("value", "**Encontrar valor**: jogadores avaliados abaixo da produção, idade e liga."),
+            ("potential", "**Olhar para jovens**: sub-23 que já têm a confiança do treinador."),
+            (
+                "shortlist",
+                "**Lista e comparação**: adicione jogadores de qualquer página, "
+                "compare três lado a lado e descarregue o relatório de uma página no perfil.",
+            ),
+        ],
+    },
+    "guide_pages": {
+        "finder": {"en": "Player Finder", "pt": "Pesquisa"},
+        "profile": {"en": "Player Profile", "pt": "Perfil"},
+        "similar": {"en": "Similar Players", "pt": "Parecidos"},
+        "value": {"en": "Value Finder", "pt": "Valor"},
+        "potential": {"en": "Potential", "pt": "Potencial"},
+        "shortlist": {"en": "Shortlist", "pt": "Lista"},
+    },
+    "guide_tips": {
+        "en": "Every chart has a *How to read this chart* button, hovering a column header "
+        "explains it, every finding shows how much evidence is behind it (high, medium or low "
+        "confidence), and the **Glossary** at the bottom of the sidebar explains the terms.",
+        "pt": "Cada gráfico tem um botão *Como ler este gráfico*, passar o rato pelo cabeçalho "
+        "de uma coluna explica-a, cada conclusão mostra quanta evidência a suporta (confiança "
+        "alta, média ou baixa), e o **Glossário** no fundo da barra lateral explica os termos.",
+    },
     "links": {
         "finder": {"en": "Find players", "pt": "Pesquisar jogadores"},
         "value": {"en": "Value Finder", "pt": "Valor de mercado"},
@@ -113,6 +173,14 @@ focus_name = settings.scope.competitions[focus]
 min_minutes = settings.analysis.min_minutes
 season = filters.season
 c.page_header(tr(TEXT["title"], lang), tr(TEXT["question"], lang).format(league=focus_name))
+
+with st.expander(tr(TEXT["guide_title"], lang), icon=":material/explore:"):
+    st.markdown(tr(TEXT["guide_intro"], lang))
+    for step, (page_key, text) in enumerate(TEXT["guide_steps"][lang], start=1):
+        text_col, link_col = st.columns([4, 1])
+        text_col.markdown(f"{step}. {text}")
+        link_col.page_link(PAGES[page_key], label=f"{tr(TEXT['guide_pages'][page_key], lang)} →")
+    st.caption(tr(TEXT["guide_tips"], lang))
 
 league = universe[universe["competition_id"] == focus]
 regulars = league[league["minutes"] >= min_minutes]
