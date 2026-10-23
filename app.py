@@ -9,6 +9,7 @@ TITLES = {
     "profile": {"en": "Player Profile", "pt": "Perfil do jogador"},
     "similar": {"en": "Similar Players", "pt": "Jogadores parecidos"},
     "value": {"en": "Value Finder", "pt": "Valor de mercado"},
+    "potential": {"en": "Potential", "pt": "Potencial"},
 }
 
 lang = st.session_state.get("lang", "en")
