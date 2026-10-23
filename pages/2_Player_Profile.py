@@ -9,6 +9,7 @@ from scouting.insights import POSITION_LABEL, player_insights
 from scouting.metrics import trend
 from scouting.metrics.catalog import PROFILE_METRICS, metric
 from scouting.metrics.percentiles import PCT_SUFFIX
+from scouting.report import ReportInput, player_report_html, report_filename
 from scouting.ui import charts
 from scouting.ui import components as c
 from scouting.ui.ai_note import ai_note_block
@@ -128,6 +129,13 @@ TEXT = {
     "trend_prev": {"en": "Last season", "pt": "Época anterior"},
     "trend_now": {"en": "This season", "pt": "Esta época"},
     "similar": {"en": "Find similar players", "pt": "Procurar jogadores parecidos"},
+    "report": {"en": "Download one-page report", "pt": "Descarregar relatório de uma página"},
+    "report_help": {
+        "en": "A printable page with this player's key numbers, percentiles, change since last "
+        "season, observations and data gaps. Open it in a browser and print or save as PDF.",
+        "pt": "Uma página para imprimir com os números-chave, percentis, evolução, observações e "
+        "lacunas dos dados deste jogador. Abra no navegador e imprima ou guarde como PDF.",
+    },
     "metric": {"en": "Metric", "pt": "Métrica"},
     "raw": {"en": "Value", "pt": "Valor"},
     "pct": {"en": "Percentile", "pt": "Percentil"},
@@ -160,6 +168,37 @@ thresholds = (
 confidence = confidence_for_minutes(row["minutes"], thresholds)
 contract = row["contract_expiration_date"]
 
+insights = player_insights(
+    row,
+    confidence_minutes=thresholds,
+    min_minutes=min_minutes,
+    sample_thresholds=(
+        settings.analysis.confidence_sample.medium,
+        settings.analysis.confidence_sample.high,
+    ),
+)
+# Season-over-season change, computed once for the page section and the report.
+previous = trend.previous_season(data.players, row)
+why_not = trend.minutes_note(previous, min_minutes, lang)
+has_profile = row["minutes"] >= min_minutes and row["position_group"] in PROFILE_METRICS
+changes = None
+trend_insights: list = []
+if has_profile and not why_not:
+    changes = trend.season_changes(
+        row,
+        previous,
+        PROFILE_METRICS[row["position_group"]],
+        threshold=settings.analysis.trend_min_change,
+    )
+    trend_insights = trend.change_insights(
+        changes, current=row, previous=previous, confidence_minutes=thresholds
+    )
+strength = data.league_strength[
+    (data.league_strength["competition_id"] == row["competition_id"])
+    & (data.league_strength["season"] == row["season"])
+]["strength_index"]
+strength_index = None if strength.empty else float(strength.iloc[0])
+
 c.kpi_row(
     [
         c.Kpi(
@@ -191,15 +230,32 @@ c.kpi_row(
     ]
 )
 
-insights = player_insights(
-    row,
-    confidence_minutes=thresholds,
-    min_minutes=min_minutes,
-    sample_thresholds=(
-        settings.analysis.confidence_sample.medium,
-        settings.analysis.confidence_sample.high,
+season_text = season_label(int(row["season"]))
+report_html = player_report_html(
+    ReportInput(
+        row=row,
+        profile_keys=list(PROFILE_METRICS.get(row["position_group"], ())) if has_profile else [],
+        insights=insights,
+        min_minutes=min_minutes,
+        confidence=confidence,
+        data_cutoff=data.data_cutoff,
+        season_label=season_text,
+        strength_index=strength_index,
+        trend_insights=trend_insights,
+        trend_note=why_not if has_profile else None,
+        previous_season_label=(None if previous is None else season_label(int(previous["season"]))),
     ),
+    lang,
 )
+st.download_button(
+    tr(TEXT["report"], lang),
+    data=report_html.encode("utf-8"),
+    file_name=report_filename(row, season_text),
+    mime="text/html",
+    help=tr(TEXT["report_help"], lang),
+    icon=":material/description:",
+)
+
 group = row["position_group"]
 footer = c.source_note(
     lang,
@@ -241,16 +297,11 @@ else:
 
 # Change since last season (percentiles against the same kind of peers each season)
 st.subheader(tr(TEXT["trend_heading"], lang))
-previous = trend.previous_season(data.players, row)
-why_not = trend.minutes_note(previous, min_minutes, lang)
-if row["minutes"] < min_minutes or group not in PROFILE_METRICS:
+if not has_profile:
     st.caption(t("no_data", lang))
 elif why_not:
     st.caption(why_not)
 else:
-    changes = trend.season_changes(
-        row, previous, PROFILE_METRICS[group], threshold=settings.analysis.trend_min_change
-    )
     before, after = season_label(int(previous["season"])), season_label(int(row["season"]))
     threshold = f"{settings.analysis.trend_min_change:g}"
     top = changes.iloc[0]
@@ -280,9 +331,7 @@ else:
         lang=lang,
         footer=c.source_note(lang, data_cutoff=data.data_cutoff),
         how_to_read=tr(TEXT["trend_how"], lang).format(min=num(min_minutes, lang), t=threshold),
-        insights=trend.change_insights(
-            changes, current=row, previous=previous, confidence_minutes=thresholds
-        ),
+        insights=trend_insights,
         observed=pd.DataFrame(
             {
                 tr(TEXT["metric"], lang): [metric(k).label_for(lang) for k in changes["metric"]],
@@ -322,17 +371,13 @@ c.chart_block(
     key="minutes",
 )
 
-strength = data.league_strength[
-    (data.league_strength["competition_id"] == row["competition_id"])
-    & (data.league_strength["season"] == row["season"])
-]["strength_index"]
 ai_note_block(
     row,
     settings=settings,
     lang=lang,
     confidence=confidence,
     insights=insights,
-    league_strength_index=None if strength.empty else float(strength.iloc[0]),
+    league_strength_index=strength_index,
 )
 
 c.unavailable_metrics(lang)

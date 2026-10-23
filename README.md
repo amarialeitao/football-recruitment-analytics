@@ -37,7 +37,7 @@ That shaped three decisions:
 | What the role asks for | Where it is in this project |
 | --- | --- |
 | Identify and profile players with data | Player Finder, Player Profile and Similar Players pages |
-| Dashboards and reports | A seven-page Streamlit app, bilingual, plus two written case studies ([right-back](docs/case-study.md), [striker](docs/case-study-2.md)) |
+| Dashboards and reports | A seven-page Streamlit app, bilingual, a printable one-page player report, plus two written case studies ([right-back](docs/case-study.md), [striker](docs/case-study-2.md)) |
 | Metrics and models for performance and potential | Per-90 and on-pitch metrics, percentiles by position, a market value model [tested on past seasons](docs/backtest.md), potential signals ([methodology](docs/methodology.md)) |
 | Internal tools, pipelines and automated workflows | A reproducible pipeline from a pinned, checksummed download to a tested analysis table, with CI on every push to main and every pull request |
 | Practical use of AI | An optional AI scouting-notes feature with number checking, and an honest account of how I used a coding assistant ([below](#how-i-used-ai)) |
@@ -54,7 +54,9 @@ Seven pages, all sharing the same filters (season, leagues, positions, age, minu
 - **Player Finder**: filter the whole pool and export the list to CSV.
 - **Player Profile**: one player's percentiles against his position group, how each one changed
   since last season ("start rate improved, percentile 60 → 89"), market value over time,
-  minutes by season, and a few automatic observations with a confidence badge.
+  minutes by season, and a few automatic observations with a confidence badge. A button
+  downloads a **one-page report** (key numbers, percentiles, change since last season,
+  observations, data gaps) to share or print as PDF.
 - **Similar Players**: who plays a similar statistical role, useful when a key player leaves.
 - **Value Finder**: players whose market value is low for their output, age and league.
 - **Potential**: young players who already play more than other regulars of their age.
@@ -302,6 +304,7 @@ src/scouting/
   insights.py           automatic bilingual insights with confidence
   quality.py, health.py data-quality checks and the status board
   case_study.py         the rule-based shortlist used in the case studies
+  report.py             one-page player report (HTML, prints to PDF)
   llm_notes.py          optional AI scouting notes
   ui/                   theme, translations, filters, charts, shared components
 tests/                  synthetic data only; no real player data in the tests
