@@ -10,6 +10,7 @@ TITLES = {
     "similar": {"en": "Similar Players", "pt": "Jogadores parecidos"},
     "value": {"en": "Value Finder", "pt": "Valor de mercado"},
     "potential": {"en": "Potential", "pt": "Potencial"},
+    "quality": {"en": "Data Quality", "pt": "Qualidade dos dados"},
 }
 
 lang = st.session_state.get("lang", "en")

@@ -96,6 +96,7 @@ CSS = f"""
   .sc-insight-marker {{ color: {PRIMARY}; margin-right: 6px; }}
   .sc-status-grid {{
     display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;
+    margin-bottom: 1.25rem;
   }}
   .sc-status {{
     border: 1px solid {BORDER}; border-left-width: 4px; border-radius: 8px; padding: 10px 12px;
