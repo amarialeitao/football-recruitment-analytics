@@ -45,3 +45,12 @@ quality:
   max_unreconciled_share: 0.01   # games whose goal events do not match the final score
   max_stale_value_share: 0.05    # regulars whose market value is over a year old
   max_data_age_days: 120         # days between the data cut-off and today
+
+llm:
+  # AI Scouting Notes (optional). Off by default: see README > AI Scouting Notes.
+  # The model only receives the metrics computed for the selected player.
+  enabled: false
+  provider: anthropic
+  model: claude-haiku-5-5
+  api_key_env: ANTHROPIC_API_KEY   # name of the environment variable, never the key itself
+  max_tokens: 600

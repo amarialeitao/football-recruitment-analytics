@@ -10,6 +10,7 @@ from scouting.metrics.catalog import PROFILE_METRICS, metric
 from scouting.metrics.percentiles import PCT_SUFFIX
 from scouting.ui import charts
 from scouting.ui import components as c
+from scouting.ui.ai_note import ai_note_block
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
 from scouting.ui.i18n import num, position_label, t
@@ -197,6 +198,19 @@ c.chart_block(
     footer=c.source_note(lang, data_cutoff=data.data_cutoff),
     how_to_read=tr(TEXT["minutes_how"], lang),
     key="minutes",
+)
+
+strength = data.league_strength[
+    (data.league_strength["competition_id"] == row["competition_id"])
+    & (data.league_strength["season"] == row["season"])
+]["strength_index"]
+ai_note_block(
+    row,
+    settings=settings,
+    lang=lang,
+    confidence=confidence,
+    insights=insights,
+    league_strength_index=None if strength.empty else float(strength.iloc[0]),
 )
 
 c.unavailable_metrics(lang)

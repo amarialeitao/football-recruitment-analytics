@@ -25,6 +25,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3", "pytest-cov>=5.0", "ruff>=0.6"]
+llm = ["anthropic>=0.40"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scouting"]

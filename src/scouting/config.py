@@ -128,12 +128,23 @@ class Quality(_Strict):
     max_data_age_days: int = Field(120, gt=0)
 
 
+class LLMSettings(_Strict):
+    """Optional AI Scouting Notes. Off by default; see README > AI Scouting Notes."""
+
+    enabled: bool = False
+    provider: str = Field("anthropic", pattern="^anthropic$")
+    model: str = "claude-haiku-5-5"
+    api_key_env: str = Field("ANTHROPIC_API_KEY", pattern=r"^[A-Z_][A-Z0-9_]*$")
+    max_tokens: int = Field(600, gt=0, le=4000)
+
+
 class Settings(_Strict):
     data: DataPaths = DataPaths()
     sources: Sources
     scope: Scope
     analysis: Analysis = Analysis()
     quality: Quality = Quality()
+    llm: LLMSettings = LLMSettings()
     root: Path = REPO_ROOT
 
     def resolve(self, path: Path) -> Path:
