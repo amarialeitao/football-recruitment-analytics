@@ -12,6 +12,7 @@ TITLES = {
     "value": {"en": "Value Finder", "pt": "Valor de mercado"},
     "potential": {"en": "Potential", "pt": "Potencial"},
     "quality": {"en": "Data Quality", "pt": "Qualidade dos dados"},
+    "shortlist": {"en": "Shortlist", "pt": "Lista de observação"},
 }
 
 # The colours follow Casa Pia's identity, so say clearly whose app this is.
@@ -23,8 +24,14 @@ DISCLAIMER = {
 }
 
 lang = st.session_state.get("lang", "en")
+# The shortlist page shows how many players it holds, so it is visible from every page.
+n_shortlisted = len(st.session_state.get("shortlist", []))
 pages = [
-    st.Page(PAGES[key], title=title[lang], default=(i == 0))
+    st.Page(
+        PAGES[key],
+        title=f"{title[lang]} ({n_shortlisted})" if key == "shortlist" else title[lang],
+        default=(i == 0),
+    )
     for i, (key, title) in enumerate(TITLES.items())
 ]
 st.navigation(pages).run()

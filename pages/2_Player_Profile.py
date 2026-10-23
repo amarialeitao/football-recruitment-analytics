@@ -12,6 +12,7 @@ from scouting.metrics.percentiles import PCT_SUFFIX
 from scouting.report import ReportInput, player_report_html, report_filename
 from scouting.ui import charts
 from scouting.ui import components as c
+from scouting.ui import shortlist as sl
 from scouting.ui.ai_note import ai_note_block
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
@@ -247,7 +248,9 @@ report_html = player_report_html(
     ),
     lang,
 )
-st.download_button(
+report_col, list_col, _ = st.columns([1, 1, 1])
+sl.toggle_button(row, lang, key="profile_shortlist", container=list_col)
+report_col.download_button(
     tr(TEXT["report"], lang),
     data=report_html.encode("utf-8"),
     file_name=report_filename(row, season_text),

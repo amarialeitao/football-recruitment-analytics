@@ -9,6 +9,7 @@ import streamlit as st
 from scouting.metrics.potential import STRONG_PERCENTILE, STRONG_VALUE_GROWTH, potential_signals
 from scouting.ui import columns as col
 from scouting.ui import components as c
+from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import apply_filters, language_selector, sidebar_filters
 from scouting.ui.i18n import num, position_label
@@ -221,5 +222,7 @@ event = st.dataframe(
 rows = event.selection.rows if event and event.selection else []
 if rows:
     chosen = ordered.iloc[rows[0]]
-    if st.button(f"{tr(TEXT['open'], lang)}: {chosen['name']}", type="primary"):
+    open_col, list_col = st.columns(2)
+    if open_col.button(f"{tr(TEXT['open'], lang)}: {chosen['name']}", type="primary"):
         go_to("profile", chosen)
+    sl.toggle_button(chosen, lang, key="potential_shortlist", container=list_col)

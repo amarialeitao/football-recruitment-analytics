@@ -8,6 +8,7 @@ import streamlit as st
 from scouting.metrics.catalog import metric
 from scouting.ui import columns as col
 from scouting.ui import components as c
+from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
 from scouting.ui.i18n import num, position_label
@@ -185,11 +186,12 @@ event = st.dataframe(
 )
 
 rows = event.selection.rows if event and event.selection else []
-left, right = st.columns([1, 1])
+left, middle, right = st.columns([1, 1, 1])
 if rows:
     chosen = shortlist.iloc[rows[0]]
     if left.button(f"{tr(TEXT['open'], lang)}: {chosen['name']}", type="primary"):
         go_to("profile", chosen)
+    sl.toggle_button(chosen, lang, key="finder_shortlist", container=middle)
 right.download_button(
     tr(TEXT["export"], lang),
     data=table.to_csv(index=False).encode("utf-8"),

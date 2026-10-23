@@ -10,6 +10,7 @@ from scouting.insights import POSITION_LABEL
 from scouting.metrics.catalog import PROFILE_METRICS, metric
 from scouting.ui import columns as col
 from scouting.ui import components as c
+from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import POSITION_ORDER, language_selector, sidebar_filters
 from scouting.ui.i18n import num, position_label, t
@@ -251,5 +252,7 @@ if rows:
     label = (
         f"{tr(TEXT['open'], lang)}: {chosen['name']} ({money(chosen['market_value_end'], lang)})"
     )
-    if st.button(label, type="primary"):
+    open_col, list_col = st.columns(2)
+    if open_col.button(label, type="primary"):
         go_to("profile", chosen)
+    sl.toggle_button(chosen, lang, key="value_shortlist", container=list_col)

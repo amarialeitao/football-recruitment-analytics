@@ -36,8 +36,8 @@ That shaped three decisions:
 
 | What the role asks for | Where it is in this project |
 | --- | --- |
-| Identify and profile players with data | Player Finder, Player Profile and Similar Players pages |
-| Dashboards and reports | A seven-page Streamlit app, bilingual, a printable one-page player report, plus two written case studies ([right-back](docs/case-study.md), [striker](docs/case-study-2.md)) |
+| Identify and profile players with data | Player Finder, Player Profile and Similar Players pages, and a Shortlist to compare candidates side by side |
+| Dashboards and reports | An eight-page Streamlit app, bilingual, a printable one-page player report, plus two written case studies ([right-back](docs/case-study.md), [striker](docs/case-study-2.md)) |
 | Metrics and models for performance and potential | Per-90 and on-pitch metrics, percentiles by position, a market value model [tested on past seasons](docs/backtest.md), potential signals ([methodology](docs/methodology.md)) |
 | Internal tools, pipelines and automated workflows | A reproducible pipeline from a pinned, checksummed download to a tested analysis table, with CI on every push to main and every pull request |
 | Practical use of AI | An optional AI scouting-notes feature with number checking, and an honest account of how I used a coding assistant ([below](#how-i-used-ai)) |
@@ -46,7 +46,8 @@ That shaped three decisions:
 
 ## What the app does
 
-Seven pages, all sharing the same filters (season, leagues, positions, age, minutes, value cap):
+Eight pages; the first seven share the same filters (season, leagues, positions, age, minutes,
+value cap):
 
 - **Market Overview**: a quick read of Liga Portugal in the chosen season and how it compares
   with the other leagues, plus three starting lists: young regulars, players valued below their
@@ -63,6 +64,8 @@ Seven pages, all sharing the same filters (season, leagues, positions, age, minu
 - **Data Quality**: coverage per league, completeness of key fields, a status board and the
   results of the automatic data checks, so the person reading the other pages knows what the
   data can and cannot carry.
+- **Shortlist**: players added from any page with *Add to shortlist*, compared up to three at a
+  time (percentiles and key numbers side by side) and exported to CSV.
 
 **Designed to be read, not decoded.** Every table formats numbers the same way (€2.5M, 94%),
 puts the answer in the first columns and explains each metric when you hover its header.
@@ -306,7 +309,7 @@ src/scouting/
   case_study.py         the rule-based shortlist used in the case studies
   report.py             one-page player report (HTML, prints to PDF)
   llm_notes.py          optional AI scouting notes
-  ui/                   theme, translations, filters, charts, shared components
+  ui/                   theme, translations, filters, charts, table columns, shortlist, shared components
 tests/                  synthetic data only; no real player data in the tests
 docs/                   methodology, case studies, backtest, screenshots
 ```
@@ -328,8 +331,8 @@ comparar jogadores da Liga Portugal e de sete ligas comparáveis (2023/24 a 2025
 abertos (transfermarkt-datasets, CC0) e sempre com o nível de confiança de cada conclusão.
 
 Fiz este projeto para a candidatura a analista de dados júnior de recrutamento do Casa Pia AC. A
-aplicação tem sete páginas (visão do mercado, pesquisa, perfil, jogadores semelhantes, valor,
-potencial e qualidade dos dados), funciona em inglês e português, e é acompanhada de dois casos
+aplicação tem oito páginas (visão do mercado, pesquisa, perfil, jogadores semelhantes, valor,
+potencial, qualidade dos dados e lista de observação), funciona em inglês e português, e é acompanhada de dois casos
 de estudo: três alternativas de baixo custo para substituir o lateral-direito Gaizka Larrazabal
 ([caso 1](docs/case-study.md)) e um ponta de lança por menos de €1m ([caso 2](docs/case-study-2.md)).
 

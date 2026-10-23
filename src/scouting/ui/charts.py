@@ -222,3 +222,52 @@ def season_change(
         legend={"orientation": "h", "y": -0.25, "x": 0},
     )
     return fig
+
+
+COMPARE_COLORS = (PRIMARY, ACCENT, "#9A9A9A")  # black, red, grey: told apart by lightness too
+
+
+def percentile_compare(
+    players: Sequence[pd.Series],
+    names: Sequence[str],
+    keys: Sequence[str],
+    lang: str,
+    *,
+    title: str,
+) -> go.Figure:
+    """Grouped percentile bars for up to three players of the same position group."""
+    labels = [metric(k).label_for(lang) for k in reversed(keys)]
+    fig = go.Figure()
+    # Plotly draws the last trace of a horizontal group on top: add them in reverse so the
+    # first player is the top bar of each metric, and reverse the legend to match.
+    series = list(zip(players, names, COMPARE_COLORS, strict=False))[::-1]
+    for player, name, color in series:
+        pct = [player.get(k + PCT_SUFFIX) for k in reversed(keys)]
+        fig.add_trace(
+            go.Bar(
+                x=[0 if pd.isna(p) else p for p in pct],
+                y=labels,
+                orientation="h",
+                name=name,
+                marker={"color": color},
+                text=["—" if pd.isna(p) else f"{p:.0f}" for p in pct],
+                textposition="outside",
+                hovertemplate=f"{name}<br>%{{y}}: %{{x:.0f}}<extra></extra>",
+            )
+        )
+    fig.add_vline(x=50, line_dash="dot", line_color=MUTED, line_width=1)
+    axis_title = (
+        "Percentile vs players in the same position (100 = best)"
+        if lang == "en"
+        else "Percentil vs jogadores da mesma posição (100 = melhor)"
+    )
+    fig.update_layout(
+        title=title,
+        barmode="group",
+        xaxis={"range": [0, 110], "title": axis_title},
+        yaxis={"title": None},
+        height=130 + 34 * len(keys) * max(1, len(players)),
+        legend={"orientation": "h", "y": -0.12, "x": 0, "traceorder": "reversed"},
+        bargap=0.25,
+    )
+    return fig

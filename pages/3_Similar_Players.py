@@ -10,6 +10,7 @@ from scouting.metrics.similarity import find_similar
 from scouting.ui import charts
 from scouting.ui import columns as col
 from scouting.ui import components as c
+from scouting.ui import shortlist as sl
 from scouting.ui.data import setup_page
 from scouting.ui.filters import language_selector, sidebar_filters
 from scouting.ui.i18n import num, position_label, t
@@ -180,5 +181,7 @@ c.chart_block(
     key="compare",
 )
 st.caption(f"{player_label(candidate)} · {money(candidate['market_value_end'], lang)}")
-if st.button(f"{tr(TEXT['open'], lang)}: {cand_name}", type="primary"):
+open_col, list_col = st.columns(2)
+if open_col.button(f"{tr(TEXT['open'], lang)}: {cand_name}", type="primary"):
     go_to("profile", candidate)
+sl.toggle_button(candidate, lang, key="similar_shortlist", container=list_col)

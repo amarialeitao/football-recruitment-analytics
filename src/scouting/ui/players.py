@@ -25,6 +25,7 @@ PAGES = {
     "value": "pages/4_Value_Finder.py",
     "potential": "pages/5_Potential.py",
     "quality": "pages/6_Data_Quality.py",
+    "shortlist": "pages/7_Shortlist.py",
 }
 
 
