@@ -51,7 +51,25 @@ def test_disabled_by_default_in_project_config() -> None:
 def test_unavailable_reasons() -> None:
     assert "disabled" in unavailable_reason(LLMSettings(), KEY)
     assert "ANTHROPIC_API_KEY" in unavailable_reason(ON, {})
-    assert unavailable_reason(ON, KEY) is None  # anthropic is installed in the dev env
+
+
+def test_available_when_configured_and_installed() -> None:
+    pytest.importorskip("anthropic")  # only with the optional [llm] extra
+    assert unavailable_reason(ON, KEY) is None
+
+
+def test_missing_optional_dependency_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
+    import builtins
+
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "anthropic":
+            raise ImportError(name)
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    assert "[llm]" in unavailable_reason(ON, KEY)
 
 
 def test_api_key_env_name_is_validated() -> None:
@@ -158,6 +176,7 @@ def test_block_hidden_when_disabled() -> None:
 def test_block_shows_button_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
     from streamlit.testing.v1 import AppTest
 
+    pytest.importorskip("anthropic")
     monkeypatch.setenv("TEST_LLM_ON", "1")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     at = AppTest.from_function(_profile_gallery, default_timeout=30)
