@@ -1,6 +1,8 @@
 """Potential signals for young players. Signals, not predictions.
 
-Three observable signals, each compared with players of the same position group and age band:
+Three observable signals. The first two compare a player with *regulars* (players above the
+minimum minutes) of the same position group and age band in the same season, so the signal says
+"plays more than other young regulars", not just "plays":
 
 * ``minutes_for_age_pct``: share of team minutes vs peers of the same age (rounded down) and
   position group in the same season. Playing a lot young is the most robust public signal.
@@ -27,18 +29,21 @@ def _pct_within(df: pd.DataFrame, column: str, groups: list[str]) -> pd.Series:
     return ranks.where(sizes >= MIN_PEERS).round(1)
 
 
-def potential_signals(df: pd.DataFrame, *, young_age_max: float) -> pd.DataFrame:
+def potential_signals(
+    df: pd.DataFrame, *, young_age_max: float, min_minutes: int = 0
+) -> pd.DataFrame:
     """Return young players (``age <= young_age_max``) with their potential signals.
 
-    Age bands are compared against *all* players of that age with minutes, not only the
-    young subset, so the comparison group is as large as possible.
+    Percentiles are computed among players of the same season, position group and age band
+    who reached ``min_minutes``. Players below it keep their row with empty percentiles.
     """
     out = df.dropna(subset=["age", "position_group"]).copy()
     out["age_band"] = np.floor(out["age"]).astype("int64")
     groups = ["season", "position_group", "age_band"]
-    out["age_band_n"] = out.groupby(groups)["player_id"].transform("size")
-    out["minutes_for_age_pct"] = _pct_within(out, "minutes_share", groups)
-    out["start_rate_for_age_pct"] = _pct_within(out, "start_rate", groups)
+    pool = out[out["minutes"] >= min_minutes]
+    out["age_band_n"] = pool.groupby(groups)["player_id"].transform("size").reindex(out.index)
+    out["minutes_for_age_pct"] = _pct_within(pool, "minutes_share", groups).reindex(out.index)
+    out["start_rate_for_age_pct"] = _pct_within(pool, "start_rate", groups).reindex(out.index)
 
     start = out["market_value_start"].astype("float64")
     end = out["market_value_end"].astype("float64")

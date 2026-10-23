@@ -24,3 +24,16 @@ def test_potential_value_growth_and_small_bands() -> None:
     assert out.loc[1, "value_growth"] == pytest.approx(1.0)
     # Bands with fewer than 5 peers get no percentile rather than a misleading one.
     assert out["minutes_for_age_pct"].isna().all()
+
+
+def test_potential_compares_with_regulars_only() -> None:
+    df = synthetic_player_season(n_per_group=40)
+    df["age"] = 21.0
+    out = potential_signals(df, young_age_max=23, min_minutes=900)
+    regulars = out[out["minutes"] >= 900]
+    below = out[out["minutes"] < 900]
+    assert regulars["minutes_for_age_pct"].notna().all()
+    assert below["minutes_for_age_pct"].isna().all()
+    assert (
+        regulars["age_band_n"] == regulars.groupby("position_group")["player_id"].transform("size")
+    ).all()
