@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 
+from scouting.checks import DataCheckError, assert_valid, report, run_checks
 from scouting.config import load_settings
 from scouting.transform.player_season import build_player_season
 from scouting.transform.stints import build_stints
@@ -28,6 +29,15 @@ def main(argv: list[str] | None = None) -> int:
 
     stints = build_stints(tables.games, tables.appearances, tables.game_lineups, tables.game_events)
     table = build_player_season(tables, stints)
+
+    results = run_checks(table, settings)
+    print("Data checks:")
+    print(report(results))
+    try:
+        assert_valid(results)
+    except DataCheckError as error:
+        print(f"\nNot written: {str(error).splitlines()[0]}")
+        return 1
 
     out = settings.processed_dir / OUTPUT_NAME
     table.to_parquet(out, index=False)

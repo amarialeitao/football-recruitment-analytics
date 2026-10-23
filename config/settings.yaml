@@ -51,6 +51,13 @@ quality:
   max_stale_value_share: 0.05    # regulars whose market value is over a year old
   max_data_age_days: 120         # days between the data cut-off and today
 
+checks:
+  # Plausibility bounds for the data checks run by scripts/build_dataset.py.
+  # Breaking an age or market-value bound stops the build; height only produces a warning.
+  age_range: [14, 45]
+  height_cm_range: [150, 215]
+  market_value_max: 300000000    # EUR; the most valuable player in scope is far below this
+
 llm:
   # AI Scouting Notes (optional). Off by default: see README > AI Scouting Notes.
   # The model only receives the metrics computed for the selected player.

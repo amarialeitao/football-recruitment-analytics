@@ -3,6 +3,8 @@
 Grain: ``(player_id, season, competition_id)``. A player who changed clubs within the same league
 in one season gets one row; ``club_id`` is the club where he played most minutes and
 ``n_clubs`` says how many clubs he played for. Per-90 metrics use official minutes.
+``team_games`` is his club's league games, or the full league season for players who moved
+between two clubs of the same league.
 """
 
 from __future__ import annotations
@@ -121,7 +123,14 @@ def build_player_season(tables: Tables, stints: pd.DataFrame | None = None) -> p
     n_clubs = by_club.groupby(KEY).size().rename("n_clubs")
 
     df = usage.join(counting, how="left").join(n_clubs).reset_index().merge(main_club, on=KEY)
-    df = df.merge(_team_games(games).reset_index(), on=["season", "competition_id", "club_id"])
+    team_games = _team_games(games).reset_index()
+    df = df.merge(team_games, on=["season", "competition_id", "club_id"])
+    # A player who moved between two clubs of the same league could play in more games than
+    # his main club alone: measure him against the full league season instead (the most games
+    # any club played), so his share is not overstated.
+    season_length = team_games.groupby(["season", "competition_id"])["team_games"].max()
+    full_season = df.set_index(["season", "competition_id"]).index.map(season_length)
+    df["team_games"] = df["team_games"].where(df["n_clubs"] == 1, full_season.to_numpy())
     df["minutes_share"] = (df["minutes"] / (df["team_games"] * MATCH_MINUTES)).clip(upper=1.0)
     df["start_rate"] = df["starts"] / df["games"]
 

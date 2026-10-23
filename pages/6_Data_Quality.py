@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from scouting.checks import run_checks
 from scouting.health import status_board
 from scouting.quality import FIELD_LABELS
 from scouting.ui import columns as col
@@ -88,6 +89,24 @@ TEXT = {
     "eu_games": {"en": "European games", "pt": "Jogos europeus"},
     "eu_ppg": {"en": "Points per game vs other leagues", "pt": "Pontos por jogo vs outras ligas"},
     "limits": {"en": "Known limitations", "pt": "Limitações conhecidas"},
+    "checks": {"en": "Automatic data checks", "pt": "Verificações automáticas dos dados"},
+    "checks_intro": {
+        "en": "Rules the data must pass every time the dataset is built. If a rule marked "
+        "*stops the build* fails, the table is not written and the app keeps the last good "
+        "version. Warnings point to likely mistakes in the source in fields the analysis does "
+        "not use.",
+        "pt": "Regras que os dados têm de cumprir sempre que o conjunto de dados é construído. "
+        "Se uma regra que *trava a construção* falhar, a tabela não é escrita e a aplicação "
+        "mantém a última versão válida. Os avisos apontam erros prováveis na fonte em campos "
+        "que a análise não usa.",
+    },
+    "check_ok": {"en": "Passed", "pt": "Cumprida"},
+    "check_error": {"en": "Failed: stops the build", "pt": "Falhou: trava a construção"},
+    "check_warning": {"en": "Warning", "pt": "Aviso"},
+    "check_rows": {"en": "{n} rows, e.g. {who}", "pt": "{n} linhas, p. ex. {who}"},
+    "check_row": {"en": "1 row: {who}", "pt": "1 linha: {who}"},
+    "check_blocking": {"en": "stops the build", "pt": "trava a construção"},
+    "check_info": {"en": "warning only", "pt": "só aviso"},
     "source": {"en": "Source and licence", "pt": "Fonte e licença"},
 }
 
@@ -265,6 +284,33 @@ st.dataframe(
         tr(TEXT["eu_ppg"], lang): col.number("eu_ppg", lang, "%.2f"),
     },
 )
+
+# Automatic data checks (the same rules scripts/build_dataset.py enforces)
+st.subheader(tr(TEXT["checks"], lang))
+st.caption(tr(TEXT["checks_intro"], lang))
+check_results = run_checks(data.players, settings)
+lines = []
+for result in check_results:
+    kind = tr(TEXT["check_blocking" if result.severity == "error" else "check_info"], lang)
+    if result.passed:
+        status = f"✓ {tr(TEXT['check_ok'], lang)}"
+        detail = ""
+    else:
+        status = (
+            f"⚠ {tr(TEXT['check_error' if result.severity == 'error' else 'check_warning'], lang)}"
+        )
+        who = ", ".join(
+            f"{e['name']} ({season_label(int(e['season']))}, {e['competition_id']})"
+            for e in result.examples
+        )
+        if result.failing == 1:
+            detail = " · " + tr(TEXT["check_row"], lang).format(who=who)
+        else:
+            detail = " · " + tr(TEXT["check_rows"], lang).format(
+                n=num(result.failing, lang), who=who
+            )
+    lines.append(f"- **{status}** · {result.rule[lang]} *({kind})*{detail}")
+st.markdown("\n".join(lines))
 
 # Limitations and source
 st.subheader(tr(TEXT["limits"], lang))

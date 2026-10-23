@@ -289,6 +289,11 @@ def test_main_club_when_player_moves_within_league(tables: Tables) -> None:
     row = _row(build_player_season(moved), player_id=10)
     assert row["n_clubs"] == 2
     assert row["club_id"] == 3  # 90 minutes at club 3 vs 60 at club 1
+    # Measured against the full league season, not his main club's games only.
+    season_length = build_player_season(moved)["team_games"].max()
+    assert row["team_games"] == season_length
+    assert row["games"] <= row["team_games"]
+    assert row["minutes_share"] == pytest.approx(row["minutes"] / (row["team_games"] * 90))
 
 
 def test_season_label() -> None:

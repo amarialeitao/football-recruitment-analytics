@@ -145,6 +145,22 @@ class Quality(_Strict):
     max_data_age_days: int = Field(120, gt=0)
 
 
+class Checks(_Strict):
+    """Plausibility bounds for the data checks (see :mod:`scouting.checks`)."""
+
+    age_range: tuple[float, float] = (14, 45)
+    height_cm_range: tuple[float, float] = (150, 215)
+    market_value_max: float = Field(300_000_000, gt=0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> Checks:
+        for name in ("age_range", "height_cm_range"):
+            low, high = getattr(self, name)
+            if low >= high:
+                raise ValueError(f"checks.{name} must be [low, high] with low < high")
+        return self
+
+
 class LLMSettings(_Strict):
     """Optional AI Scouting Notes. Off by default; see README > AI Scouting Notes."""
 
@@ -161,6 +177,7 @@ class Settings(_Strict):
     scope: Scope
     analysis: Analysis = Analysis()
     quality: Quality = Quality()
+    checks: Checks = Checks()
     llm: LLMSettings = LLMSettings()
     root: Path = REPO_ROOT
 

@@ -40,7 +40,7 @@ position (right-back, centre-back, …) is kept for filtering.
 | Metric | Definition |
 | --- | --- |
 | Minutes, games, starts | Official league minutes and appearances |
-| Share of team minutes | Minutes / (team league games x 90) |
+| Share of team minutes | Minutes / (team league games x 90). For a player who moved between two clubs of the same league, the full league season is used instead |
 | Start rate | Starts / games played |
 | Goals, assists, goals + assists per 90 | Totals / minutes x 90 |
 | Team goals scored / conceded per 90 (on pitch) | Goals the team scored or conceded while the player was on |
@@ -200,6 +200,34 @@ area is OK or ATTENTION, with a one-line reason, and the thresholds come from th
 
 A missing contract date is reported separately and not counted as missing data: it is expected
 for loans and free agents.
+
+### Automatic data checks
+
+Every time `scripts/build_dataset.py` runs, the table goes through explicit rules
+(`src/scouting/checks.py`). The results are also listed on the Data Quality page.
+
+**Rules that stop the build.** If one fails, the table is not written, so a broken table never
+reaches the app:
+
+- one row per player, season and league, with player, season, league and club always filled;
+- only the configured leagues and seasons;
+- minutes positive and at most 90 per game played; starts never above games played;
+- a player who stayed at one club plays at most his team's games;
+- shares of minutes and start rates between 0% and 100%;
+- goals, assists and cards never negative; on-pitch goal difference = scored minus conceded;
+- age between 14 and 45, and market values above €0 and at most €300m, when known.
+
+**Warnings.** These are likely mistakes in the source, in fields the analysis does not use. They
+are reported but never block the build: a height outside 150-215 cm, a contract that had ended
+before the season started, or a missing position. In the current data there is one implausible
+height, one already-expired contract and six players without a position.
+
+The checks found a real issue while they were being written. For 260 player-seasons where a
+player moved between two clubs of the same league, "share of team minutes" was measured against
+his main club's games only, which overstated it. It now uses the full league season. That
+change does not alter any number in the right-back case study. Moving clubs is also why one player
+legitimately played 31 games in a 30-game season, so that rule only applies to players who
+stayed at one club.
 
 ## 11. Limitations
 
