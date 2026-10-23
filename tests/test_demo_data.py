@@ -103,6 +103,30 @@ def test_downloads_verifies_and_unpacks(tmp_path: Path, archive: Path) -> None:
     assert demo.ensure_demo_data(settings, env=ON, fetch=None) is False
 
 
+def test_new_release_replaces_installed_demo_data(tmp_path: Path, processed: Path) -> None:
+    v1 = demo.package(processed, tmp_path / "v1.zip")
+    settings = _settings(tmp_path, v1)
+    assert demo.ensure_demo_data(settings, env=ON, fetch=_fetch(v1)) is True
+
+    (processed / "player_season.parquet").write_bytes(b"players v2")
+    v2 = demo.package(processed, tmp_path / "v2.zip")
+    newer = _settings(tmp_path, v2)
+    assert demo.ensure_demo_data(newer, env=ON, fetch=_fetch(v2)) is True
+    assert (newer.processed_dir / "player_season.parquet").read_bytes() == b"players v2"
+    marker = newer.processed_dir / demo.MARKER_FILE
+    assert marker.read_text(encoding="utf-8") == sha256_of(v2)
+    assert demo.ensure_demo_data(newer, env=ON, fetch=None) is False  # already on v2
+
+
+def test_locally_built_data_is_never_replaced(tmp_path: Path, archive: Path) -> None:
+    settings = _settings(tmp_path, archive)
+    extract = settings.processed_dir / "transfermarkt"
+    extract.mkdir(parents=True)
+    (extract / "manifest.json").write_text("{}")  # pipeline output, no demo marker
+    assert demo.ensure_demo_data(settings, env=ON, fetch=None) is False
+    assert (extract / "manifest.json").read_text() == "{}"
+
+
 def test_checksum_mismatch_installs_nothing(tmp_path: Path, archive: Path) -> None:
     settings = _settings(tmp_path, archive)
 

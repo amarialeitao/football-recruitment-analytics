@@ -140,6 +140,9 @@ To deploy your own copy:
 Dependencies are installed from `requirements.txt`, which installs this package from
 `pyproject.toml`. The AI Scouting Notes stay off in the demo.
 
+To publish new data later, attach a new zip to a new release and update `sources.demo_data`. The
+server notices the new checksum and replaces its copy on the next start.
+
 ## Data
 
 | | |

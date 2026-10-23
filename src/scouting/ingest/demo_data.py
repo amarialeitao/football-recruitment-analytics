@@ -7,7 +7,8 @@ downloads that zip, checks its SHA-256 against ``sources.demo_data`` in ``config
 and unpacks it into ``data/processed``.
 
 This only happens when the ``SCOUTING_DEMO_DATA`` environment variable is set, so running the
-app locally always uses data you built yourself.
+app locally always uses data you built yourself. When ``sources.demo_data`` points to a new
+archive, the server replaces its copy on the next start.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from scouting.ingest.transfermarkt import _stream, download
 ENV_VAR = "SCOUTING_DEMO_DATA"
 EXTRACT_DIR = "transfermarkt"
 PLAYER_SEASON_FILE = "player_season.parquet"
+MARKER_FILE = ".demo-data-sha256"  # checksum of the installed demo archive
 # Fixed timestamp so the same files always give the same zip (and the same checksum).
 _ZIP_DATE = (2020, 1, 1, 0, 0, 0)
 _MEMBER = re.compile(rf"^(?:{EXTRACT_DIR}/[a-z_]+\.(?:parquet|json)|{PLAYER_SEASON_FILE})$")
@@ -85,16 +87,29 @@ def ensure_demo_data(
     env: dict[str, str] | None = None,
     fetch: Callable[[str], Iterable[bytes]] = _stream,
 ) -> bool:
-    """Download and unpack the demo data if enabled and no local data exists.
+    """Install the configured demo data if enabled and not already installed.
+
+    A marker file records the checksum of the installed archive. When the configuration points
+    to a new archive (a new release), the demo data is replaced on the next start; a server
+    that keeps its files between updates would otherwise go on showing the old version. Data
+    built locally (no marker) is never touched.
 
     Returns True when data was installed, False when nothing had to be done.
     """
-    processed = settings.processed_dir
-    if (processed / EXTRACT_DIR / "manifest.json").exists() or not demo_enabled(env):
+    if not demo_enabled(env):
         return False
     source = settings.sources.demo_data
     if source is None:
         raise DemoDataError(f"{ENV_VAR} is set but sources.demo_data is not configured.")
+    processed = settings.processed_dir
+    marker = processed / MARKER_FILE
+    has_data = (processed / EXTRACT_DIR / "manifest.json").exists()
+    if has_data:
+        if not marker.exists():
+            return False  # built locally with the pipeline: never overwrite
+        if marker.read_text(encoding="utf-8").strip() == source.sha256:
+            return False  # this version is already installed
     archive = download(source.url, settings.raw_dir / source.filename, source.sha256, fetch=fetch)
     unpack(archive, processed)
+    marker.write_text(source.sha256, encoding="utf-8")
     return True
