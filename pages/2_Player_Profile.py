@@ -5,7 +5,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from scouting.insights import player_insights
+from scouting.insights import POSITION_LABEL, player_insights
 from scouting.metrics.catalog import PROFILE_METRICS, metric
 from scouting.metrics.percentiles import PCT_SUFFIX
 from scouting.ui import charts
@@ -30,12 +30,30 @@ TEXT = {
         "pt": "O que este jogador acrescenta, e com que segurança o podemos dizer?",
     },
     "choose": {"en": "Player", "pt": "Jogador"},
-    "age": {"en": "Age", "pt": "Idade"},
-    "position": {"en": "Position", "pt": "Posição"},
-    "club": {"en": "Club", "pt": "Clube"},
-    "minutes": {"en": "Minutes", "pt": "Minutos"},
-    "value": {"en": "Market value (end of season)", "pt": "Valor de mercado (fim da época)"},
-    "contract": {"en": "Contract until", "pt": "Contrato até"},
+    "age": {"en": "years old", "pt": "anos"},
+    "age_note": {
+        "en": "on 1 January {year}, mid-season",
+        "pt": "a 1 de janeiro de {year}, a meio da época",
+    },
+    "position": {"en": "main position", "pt": "posição principal"},
+    "position_note": {
+        "en": "his percentiles compare him with {group}",
+        "pt": "os percentis comparam-no com {group}",
+    },
+    "club": {"en": "club where he played most", "pt": "clube onde mais jogou"},
+    "minutes": {"en": "league minutes this season", "pt": "minutos de liga nesta época"},
+    "minutes_note": {
+        "en": "{share:.0%} of his team's minutes · {conf}",
+        "pt": "{share:.0%} dos minutos da equipa · {conf}",
+    },
+    "value": {
+        "en": "market value at the end of the season",
+        "pt": "valor de mercado no fim da época",
+    },
+    "contract": {
+        "en": "Transfermarkt estimate · contract until",
+        "pt": "estimativa Transfermarkt · contrato até",
+    },
     "profile_title": {
         "en": "Percentile profile vs {n} {pos} in the same season",
         "pt": "Perfil em percentis vs {n} {pos} na mesma época",
@@ -106,13 +124,25 @@ contract = row["contract_expiration_date"]
 
 c.kpi_row(
     [
-        c.Kpi(num(row["age"], lang, 1), tr(TEXT["age"], lang)),
-        c.Kpi(position_label(row["sub_position"], lang), tr(TEXT["position"], lang)),
+        c.Kpi(
+            num(row["age"], lang, 1),
+            tr(TEXT["age"], lang),
+            tr(TEXT["age_note"], lang).format(year=int(row["season"]) + 1),
+        ),
+        c.Kpi(
+            position_label(row["sub_position"], lang),
+            tr(TEXT["position"], lang),
+            tr(TEXT["position_note"], lang).format(
+                group=POSITION_LABEL[lang][row["position_group"]]
+            ),
+        ),
         c.Kpi(str(row["club_name"]), tr(TEXT["club"], lang), str(row["competition_name"])),
         c.Kpi(
             num(row["minutes"], lang),
             tr(TEXT["minutes"], lang),
-            t(f"confidence_{confidence}", lang),
+            tr(TEXT["minutes_note"], lang).format(
+                share=float(row["minutes_share"]), conf=t(f"confidence_{confidence}", lang)
+            ),
         ),
         c.Kpi(
             money(row["market_value_end"], lang),

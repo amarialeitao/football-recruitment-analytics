@@ -22,10 +22,26 @@ TEXT = {
         "en": "Can we trust what we are seeing, and what is missing?",
         "pt": "Podemos confiar no que vemos, e o que falta?",
     },
-    "cutoff": {"en": "Last game in the data", "pt": "Último jogo nos dados"},
-    "games": {"en": "League games", "pt": "Jogos de liga"},
-    "rows": {"en": "Player-seasons", "pt": "Jogador-épocas"},
-    "version": {"en": "Source version", "pt": "Versão da fonte"},
+    "cutoff": {"en": "last game in the data", "pt": "último jogo nos dados"},
+    "cutoff_note": {
+        "en": "nothing after this date is included",
+        "pt": "nada depois desta data está incluído",
+    },
+    "games": {"en": "league games analysed", "pt": "jogos de liga analisados"},
+    "games_note": {
+        "en": "{leagues} leagues × {seasons} seasons",
+        "pt": "{leagues} ligas × {seasons} épocas",
+    },
+    "rows": {"en": "player seasons", "pt": "épocas de jogadores"},
+    "rows_note": {
+        "en": "one row per player, season and league",
+        "pt": "uma linha por jogador, época e liga",
+    },
+    "version": {"en": "version of the source data", "pt": "versão dos dados de origem"},
+    "version_note": {
+        "en": "transfermarkt-datasets, fixed so results can be reproduced",
+        "pt": "transfermarkt-datasets, fixa para os resultados serem reproduzíveis",
+    },
     "coverage_title": {
         "en": "Regulars ({min}+ minutes) per league and season: {low} has the smallest pool",
         "pt": "Titulares habituais ({min}+ minutos) por liga e época: {low} tem o menor grupo",
@@ -115,10 +131,20 @@ version = (data.manifest.get("source_version") or [{}])[0]
 version_label = str(version.get("commit_hash") or version.get("version") or "—")[:7]
 c.kpi_row(
     [
-        c.Kpi(q.data_cutoff.date().isoformat(), tr(TEXT["cutoff"], lang)),
-        c.Kpi(num(q.games, lang), tr(TEXT["games"], lang)),
-        c.Kpi(num(q.player_seasons, lang), tr(TEXT["rows"], lang)),
-        c.Kpi(version_label, tr(TEXT["version"], lang), "transfermarkt-datasets"),
+        c.Kpi(
+            q.data_cutoff.date().isoformat(),
+            tr(TEXT["cutoff"], lang),
+            tr(TEXT["cutoff_note"], lang),
+        ),
+        c.Kpi(
+            num(q.games, lang),
+            tr(TEXT["games"], lang),
+            tr(TEXT["games_note"], lang).format(
+                leagues=len(settings.scope.competitions), seasons=len(settings.scope.seasons)
+            ),
+        ),
+        c.Kpi(num(q.player_seasons, lang), tr(TEXT["rows"], lang), tr(TEXT["rows_note"], lang)),
+        c.Kpi(version_label, tr(TEXT["version"], lang), tr(TEXT["version_note"], lang)),
     ]
 )
 c.status_board(

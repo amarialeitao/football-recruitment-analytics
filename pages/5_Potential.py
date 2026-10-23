@@ -21,9 +21,27 @@ TEXT = {
         "en": "Which young players are already trusted by their coaches?",
         "pt": "Que jogadores jovens já têm a confiança dos treinadores?",
     },
-    "young": {"en": "Young players (≤ {age})", "pt": "Jogadores jovens (≤ {age})"},
-    "two_plus": {"en": "Meet 2+ of 3 signals", "pt": "Cumprem 2+ de 3 sinais"},
-    "median_share": {"en": "Median share of team minutes", "pt": "% mediana dos minutos da equipa"},
+    "young": {"en": "players aged {age} or under", "pt": "jogadores com {age} anos ou menos"},
+    "young_note": {
+        "en": "match your filters, season {season}",
+        "pt": "cumprem os filtros, época {season}",
+    },
+    "two_plus": {
+        "en": "show at least 2 of the 3 signals",
+        "pt": "mostram pelo menos 2 dos 3 sinais",
+    },
+    "two_plus_note": {
+        "en": "signals are explained under the chart",
+        "pt": "os sinais são explicados por baixo do gráfico",
+    },
+    "median_share": {
+        "en": "typical share of team minutes for these young players",
+        "pt": "% típica dos minutos da equipa destes jovens",
+    },
+    "median_share_note": {
+        "en": "median: half play more, half less",
+        "pt": "mediana: metade joga mais, metade menos",
+    },
     "chart_title": {
         "en": "{k} players aged {age} or under meet at least two of the three signals",
         "pt": "{k} jogadores com {age} anos ou menos cumprem pelo menos dois dos três sinais",
@@ -111,10 +129,14 @@ c.kpi_row(
         c.Kpi(
             num(len(shown), lang),
             tr(TEXT["young"], lang).format(age=f"{max_age:g}"),
-            season_label(filters.season),
+            tr(TEXT["young_note"], lang).format(season=season_label(filters.season)),
         ),
-        c.Kpi(num(len(strong), lang), tr(TEXT["two_plus"], lang)),
-        c.Kpi(f"{shown['minutes_share'].median():.0%}", tr(TEXT["median_share"], lang)),
+        c.Kpi(num(len(strong), lang), tr(TEXT["two_plus"], lang), tr(TEXT["two_plus_note"], lang)),
+        c.Kpi(
+            f"{shown['minutes_share'].median():.0%}",
+            tr(TEXT["median_share"], lang),
+            tr(TEXT["median_share_note"], lang),
+        ),
     ]
 )
 

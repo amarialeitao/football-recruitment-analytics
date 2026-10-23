@@ -29,12 +29,24 @@ TEXT = {
     "contract": {"en": "Contract ends by", "pt": "Contrato termina até"},
     "any": {"en": "Any", "pt": "Qualquer"},
     "sort": {"en": "Sort by", "pt": "Ordenar por"},
-    "players": {"en": "Players matching the filters", "pt": "Jogadores que cumprem os filtros"},
-    "median_age": {"en": "Median age", "pt": "Idade mediana"},
-    "median_value": {"en": "Median market value", "pt": "Valor de mercado mediano"},
+    "players": {"en": "players match your filters", "pt": "jogadores cumprem os filtros"},
+    "players_note": {
+        "en": "season {season}, listed below",
+        "pt": "época {season}, na lista abaixo",
+    },
+    "median_age": {"en": "typical age in this list", "pt": "idade típica nesta lista"},
+    "median_value": {"en": "typical market value in this list", "pt": "valor típico nesta lista"},
+    "median_note": {
+        "en": "median: half are above, half below",
+        "pt": "mediana: metade acima, metade abaixo",
+    },
     "expiring": {
-        "en": "Contract ends by next summer",
-        "pt": "Contrato termina até ao próximo verão",
+        "en": "have a contract ending by {date}",
+        "pt": "têm contrato a terminar até {date}",
+    },
+    "expiring_note": {
+        "en": "a contract close to its end usually lowers the fee",
+        "pt": "um contrato perto do fim costuma baixar o valor da transferência",
     },
     "export": {"en": "Download shortlist (CSV)", "pt": "Descarregar lista (CSV)"},
     "open": {"en": "Open profile", "pt": "Abrir perfil"},
@@ -119,10 +131,26 @@ if shortlist.empty:
 expiring = (shortlist["contract_expiration_date"] <= next_summer).mean()
 c.kpi_row(
     [
-        c.Kpi(num(len(shortlist), lang), tr(TEXT["players"], lang), season_label(season)),
-        c.Kpi(num(shortlist["age"].median(), lang, 1), tr(TEXT["median_age"], lang)),
-        c.Kpi(money(shortlist["market_value_end"].median(), lang), tr(TEXT["median_value"], lang)),
-        c.Kpi(f"{expiring:.0%}", tr(TEXT["expiring"], lang), next_summer.date().isoformat()),
+        c.Kpi(
+            num(len(shortlist), lang),
+            tr(TEXT["players"], lang),
+            tr(TEXT["players_note"], lang).format(season=season_label(season)),
+        ),
+        c.Kpi(
+            num(shortlist["age"].median(), lang, 1),
+            tr(TEXT["median_age"], lang),
+            tr(TEXT["median_note"], lang),
+        ),
+        c.Kpi(
+            money(shortlist["market_value_end"].median(), lang),
+            tr(TEXT["median_value"], lang),
+            tr(TEXT["median_note"], lang),
+        ),
+        c.Kpi(
+            f"{expiring:.0%}",
+            tr(TEXT["expiring"], lang).format(date=next_summer.date().isoformat()),
+            tr(TEXT["expiring_note"], lang),
+        ),
     ]
 )
 

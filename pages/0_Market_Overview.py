@@ -17,15 +17,45 @@ from scouting.ui.players import PAGES, money, next_contract_deadline, season_lab
 from scouting.ui.theme import ACCENT, NEUTRAL_SERIES
 
 TEXT = {
+    "cards_scope": {
+        "en": "**{league}, {season}, regulars only.** A regular is a player with at least {min} "
+        "league minutes (about {games} full games). These four numbers follow the Season filter "
+        "only.",
+        "pt": "**{league}, {season}, só titulares habituais.** Titular habitual é um jogador com "
+        "pelo menos {min} minutos de liga (cerca de {games} jogos completos). Estes quatro números "
+        "só seguem o filtro Época.",
+    },
+    "k_regulars": {"en": "regulars in the league", "pt": "titulares habituais na liga"},
+    "k_regulars_note": {
+        "en": "players with enough minutes to judge",
+        "pt": "jogadores com minutos suficientes para avaliar",
+    },
+    "k_age": {"en": "typical age of a regular", "pt": "idade típica de um titular"},
+    "k_age_note": {
+        "en": "median: half are younger, half older",
+        "pt": "mediana: metade é mais nova, metade mais velha",
+    },
+    "k_value": {
+        "en": "typical market value of a regular",
+        "pt": "valor de mercado típico de um titular",
+    },
+    "k_value_note": {
+        "en": "median, end of season (Transfermarkt estimate, not a fee)",
+        "pt": "mediana, fim da época (estimativa Transfermarkt, não é uma transferência)",
+    },
+    "k_u23": {
+        "en": "of regulars' minutes were played by under-23s",
+        "pt": "dos minutos dos titulares foram jogados por sub-23",
+    },
+    "k_u23_note": {
+        "en": "{n} young regulars: how much the league trusts youth",
+        "pt": "{n} titulares jovens: quanto a liga aposta na juventude",
+    },
     "title": {"en": "Market Overview", "pt": "Visão geral do mercado"},
     "question": {
         "en": "How does {league} compare, and where should we start looking?",
         "pt": "Como se compara a {league}, e por onde começar a procurar?",
     },
-    "regulars": {"en": "Regulars ({min}+ min)", "pt": "Titulares habituais ({min}+ min)"},
-    "median_age": {"en": "Median age", "pt": "Idade mediana"},
-    "median_value": {"en": "Median market value", "pt": "Valor de mercado mediano"},
-    "u23": {"en": "Minutes played by U23", "pt": "Minutos jogados por sub-23"},
     "strength_how": {
         "en": "Average club squad value in each league, relative to {league} (= 100). It is a "
         "proxy for financial strength, used as context next to percentiles; see Data Quality "
@@ -91,16 +121,37 @@ u23_share = (
     if not regulars.empty
     else float("nan")
 )
+n_young = int((regulars["age"] < 23).sum())
+st.markdown(
+    tr(TEXT["cards_scope"], lang).format(
+        league=focus_name,
+        season=season_label(season),
+        min=num(min_minutes, lang),
+        games=num(min_minutes / 90, lang),
+    )
+)
 c.kpi_row(
     [
         c.Kpi(
             num(len(regulars), lang),
-            tr(TEXT["regulars"], lang).format(min=num(min_minutes, lang)),
-            f"{focus_name} · {season_label(season)}",
+            tr(TEXT["k_regulars"], lang),
+            tr(TEXT["k_regulars_note"], lang),
         ),
-        c.Kpi(num(regulars["age"].median(), lang, 1), tr(TEXT["median_age"], lang)),
-        c.Kpi(money(regulars["market_value_end"].median(), lang), tr(TEXT["median_value"], lang)),
-        c.Kpi(f"{u23_share:.0%}", tr(TEXT["u23"], lang)),
+        c.Kpi(
+            num(regulars["age"].median(), lang, 1),
+            tr(TEXT["k_age"], lang),
+            tr(TEXT["k_age_note"], lang),
+        ),
+        c.Kpi(
+            money(regulars["market_value_end"].median(), lang),
+            tr(TEXT["k_value"], lang),
+            tr(TEXT["k_value_note"], lang),
+        ),
+        c.Kpi(
+            f"{u23_share:.0%}",
+            tr(TEXT["k_u23"], lang),
+            tr(TEXT["k_u23_note"], lang).format(n=num(n_young, lang)),
+        ),
     ]
 )
 

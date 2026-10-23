@@ -27,11 +27,29 @@ TEXT = {
         "en": "Flag players valued at or below this share of the expected value",
         "pt": "Destacar jogadores avaliados até esta fração do valor esperado",
     },
-    "analysed": {"en": "Players analysed", "pt": "Jogadores analisados"},
-    "flagged": {"en": "Below the threshold", "pt": "Abaixo do limite"},
-    "median_ratio": {"en": "Median value vs expected", "pt": "Valor vs esperado (mediana)"},
-    "fit": {"en": "Model fit (R²)", "pt": "Ajuste do modelo (R²)"},
-    "fit_note": {"en": "share of value explained", "pt": "variação do valor explicada"},
+    "analysed": {"en": "{pos} compared", "pt": "{pos} comparados"},
+    "analysed_note": {
+        "en": "match your filters and have an up-to-date value",
+        "pt": "cumprem os filtros e têm valor atualizado",
+    },
+    "flagged": {
+        "en": "valued at {p:.0%} or less of what their output usually costs",
+        "pt": "avaliados em {p:.0%} ou menos do que a sua produção costuma custar",
+    },
+    "flagged_note": {"en": "listed in the table below", "pt": "na tabela abaixo"},
+    "median_ratio": {
+        "en": "typical value vs expected",
+        "pt": "valor vs esperado típico",
+    },
+    "median_ratio_note": {
+        "en": "1.00x = priced exactly as the model expects",
+        "pt": "1,00x = preço exatamente como o modelo espera",
+    },
+    "fit": {"en": "model fit (R²)", "pt": "ajuste do modelo (R²)"},
+    "fit_note": {
+        "en": "output, age and league explain {p:.0%} of the differences in value",
+        "pt": "produção, idade e liga explicam {p:.0%} das diferenças de valor",
+    },
     "chart_title": {
         "en": "{k} of {n} {pos} are valued at or below {p:.0%} of what similar output "
         "usually costs",
@@ -101,13 +119,25 @@ flagged = pool[pool["value_ratio"] <= threshold].sort_values("value_ratio")
 fit_r2 = pool["fit_r2"].dropna()
 c.kpi_row(
     [
-        c.Kpi(num(len(pool), lang), tr(TEXT["analysed"], lang), season_label(filters.season)),
-        c.Kpi(num(len(flagged), lang), tr(TEXT["flagged"], lang), f"≤ {threshold:.0%}"),
-        c.Kpi(num(pool["value_ratio"].median(), lang, 2) + "x", tr(TEXT["median_ratio"], lang)),
+        c.Kpi(
+            num(len(pool), lang),
+            tr(TEXT["analysed"], lang).format(pos=POSITION_LABEL[lang][group]),
+            tr(TEXT["analysed_note"], lang),
+        ),
+        c.Kpi(
+            num(len(flagged), lang),
+            tr(TEXT["flagged"], lang).format(p=threshold),
+            tr(TEXT["flagged_note"], lang),
+        ),
+        c.Kpi(
+            num(pool["value_ratio"].median(), lang, 2) + "x",
+            tr(TEXT["median_ratio"], lang),
+            tr(TEXT["median_ratio_note"], lang),
+        ),
         c.Kpi(
             "—" if fit_r2.empty else num(fit_r2.iloc[0], lang, 2),
             tr(TEXT["fit"], lang),
-            tr(TEXT["fit_note"], lang),
+            "" if fit_r2.empty else tr(TEXT["fit_note"], lang).format(p=float(fit_r2.iloc[0])),
         ),
     ]
 )
