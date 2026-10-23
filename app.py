@@ -5,6 +5,7 @@ import streamlit as st
 from scouting.ui.players import PAGES
 
 TITLES = {
+    "overview": {"en": "Market Overview", "pt": "Visão geral"},
     "finder": {"en": "Player Finder", "pt": "Pesquisa de jogadores"},
     "profile": {"en": "Player Profile", "pt": "Perfil do jogador"},
     "similar": {"en": "Similar Players", "pt": "Jogadores parecidos"},

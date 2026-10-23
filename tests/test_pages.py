@@ -32,8 +32,11 @@ def app_env(source_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
 
 
 def _run(page: str, lang: str = "en") -> AppTest:
-    at = AppTest.from_file(str(ROOT / page), default_timeout=60)
+    """Run ``page`` through the router, as a user navigating the app would."""
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60)
     at.session_state["lang"] = lang
+    at.run()
+    at.switch_page(page)
     at.run()
     return at
 
