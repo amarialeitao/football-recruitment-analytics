@@ -18,6 +18,10 @@ class Metric:
     fmt: str = "{:.2f}"
     description: str = ""
 
+    def label_for(self, lang: str) -> str:
+        """Label in ``lang`` ('en' or 'pt')."""
+        return self.label_pt if lang == "pt" else self.label
+
 
 METRICS: dict[str, Metric] = {
     m.key: m

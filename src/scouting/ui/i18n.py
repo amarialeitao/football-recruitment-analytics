@@ -60,6 +60,41 @@ TEXTS: dict[str, dict[Lang, str]] = {
 }
 
 
+# Detailed positions as published by the source (English), with Portuguese labels.
+SUB_POSITIONS_PT: dict[str, str] = {
+    "Goalkeeper": "Guarda-redes",
+    "Centre-Back": "Defesa central",
+    "Left-Back": "Lateral esquerdo",
+    "Right-Back": "Lateral direito",
+    "Defensive Midfield": "Médio defensivo",
+    "Central Midfield": "Médio centro",
+    "Attacking Midfield": "Médio ofensivo",
+    "Left Midfield": "Médio esquerdo",
+    "Right Midfield": "Médio direito",
+    "Left Winger": "Extremo esquerdo",
+    "Right Winger": "Extremo direito",
+    "Second Striker": "Segundo avançado",
+    "Centre-Forward": "Ponta de lança",
+}
+
+
+def position_label(position: str | None, lang: Lang) -> str:
+    """Detailed position in ``lang``; unknown values are returned as published."""
+    if position is None or position != position:  # None or NaN
+        return "—"
+    return SUB_POSITIONS_PT.get(position, position) if lang == "pt" else position
+
+
+def num(value: float | None, lang: Lang, digits: int = 0) -> str:
+    """Number with the language's separators: 1,906.5 (en) / 1.906,5 (pt)."""
+    if value is None or value != value:
+        return "—"
+    text = f"{value:,.{digits}f}"
+    if lang == "pt":
+        text = text.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+    return text
+
+
 def t(key: str, lang: Lang = DEFAULT_LANG) -> str:
     """Translated text for ``key``. Raises ``KeyError`` for unknown keys."""
     try:
