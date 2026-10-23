@@ -148,6 +148,12 @@ I kept the model deliberately simple. It is easy to explain, it is fitted on the
 it is used on, and its weak spots are clear: market values are crowd estimates, and anything the
 data does not measure (defending, passing, injuries, character) ends up in the error.
 
+**Has it worked before?** [docs/backtest.md](backtest.md) refits the model on 2023/24 (and
+2024/25) alone and checks what happened to market values one and two years later. Players it
+rated cheap did hold their value better, but mostly because they are cheaper. Compared with
+players of the same price, age, position and league, a player at half his expected value did
+about 6-7% better: a small, consistent edge, not a prediction.
+
 **Outdated values.** If a player's value had not been updated for more than a year at the end of
 the season, it is marked as stale and left out of the model and the Value Finder, because an old
 value makes a player look cheap.

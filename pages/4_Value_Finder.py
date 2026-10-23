@@ -65,12 +65,20 @@ TEXT = {
         "percentiles ({metrics}). Vertical axis: end-of-season market value. Expected value comes "
         "from a fit, within the position group, of market value on performance score, age and "
         "league strength. Highlighted players are valued well below what that fit predicts. "
-        "Market value is a crowd estimate, not a fee; values older than a year are excluded.",
+        "Market value is a crowd estimate, not a fee; values older than a year are excluded.\n\n"
+        "**Has it worked before?** Tested on past seasons (docs/backtest.md in the repository), "
+        "flagged players' market values did hold up better afterwards, but mostly because they "
+        "are cheaper; compared with players of the same price, age and league, the extra edge is "
+        "small. Use the flags to decide whom to watch first, not whom to buy.",
         "pt": "Eixo horizontal: índice de rendimento, a média dos percentis do perfil do jogador "
         "({metrics}). Eixo vertical: valor de mercado no fim da época. O valor esperado vem de um "
         "ajuste, dentro do grupo de posição, do valor de mercado sobre rendimento, idade e força "
         "da liga. Os jogadores destacados valem bem menos do que esse ajuste prevê. Valor de "
-        "mercado é uma estimativa, não um preço; valores com mais de um ano ficam de fora.",
+        "mercado é uma estimativa, não um preço; valores com mais de um ano ficam de fora.\n\n"
+        "**Já funcionou antes?** Testado em épocas passadas (docs/backtest.md no repositório), o "
+        "valor de mercado dos jogadores destacados aguentou-se melhor depois, mas sobretudo por "
+        "serem mais baratos; face a jogadores do mesmo preço, idade e liga, a vantagem extra é "
+        "pequena. Use os destaques para decidir quem observar primeiro, não quem comprar.",
     },
     "none": {
         "en": "No player in this group has a fitted value with the current filters.",

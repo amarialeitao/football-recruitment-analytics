@@ -38,7 +38,7 @@ That shaped three decisions:
 | --- | --- |
 | Identify and profile players with data | Player Finder, Player Profile and Similar Players pages |
 | Dashboards and reports | A seven-page Streamlit app, bilingual, plus two written case studies ([right-back](docs/case-study.md), [striker](docs/case-study-2.md)) |
-| Metrics and models for performance and potential | Per-90 and on-pitch metrics, percentiles by position, a market value model, potential signals ([methodology](docs/methodology.md)) |
+| Metrics and models for performance and potential | Per-90 and on-pitch metrics, percentiles by position, a market value model [tested on past seasons](docs/backtest.md), potential signals ([methodology](docs/methodology.md)) |
 | Internal tools, pipelines and automated workflows | A reproducible pipeline from a pinned, checksummed download to a tested analysis table, with CI on every push to main and every pull request |
 | Practical use of AI | An optional AI scouting-notes feature with number checking, and an honest account of how I used a coding assistant ([below](#how-i-used-ai)) |
 | Turn complex data into simple insights | Automatic insights in plain language, each with a confidence level and the observed data behind it |
@@ -176,6 +176,8 @@ Full details, with the reasoning behind each choice, are in
   European results shown alongside as supporting evidence.
 - **Value model:** a simple regression of market value on output, age and league strength, per
   position group (R² between 0.65 and 0.75). Players far below the line are worth a look.
+  [Tested on past seasons](docs/backtest.md): the flags carry a small, consistent edge once
+  price and age are accounted for, so they say whom to watch first, not whom to buy.
 - **Similarity:** distance between standardized profiles, turned into a 0-100 score.
 - **Potential:** signals, not predictions. Minutes and starts compared with regulars of the same
   age, plus market value growth.
@@ -291,19 +293,19 @@ three conditions is missing, the feature stays hidden.
 app.py                  Streamlit entry point (navigation, language)
 pages/                  one file per page
 config/settings.yaml    sources, scope, thresholds, AI settings: no number is hard-coded elsewhere
-scripts/                fetch_data, build_dataset, case_study, package_demo_data
+scripts/                fetch_data, build_dataset, case_study, backtest, package_demo_data
 requirements.txt        for Streamlit Community Cloud (installs the package)
 src/scouting/
   ingest/               download, checksum, schema check, extraction to Parquet, demo data
   transform/            on-pitch stints and the player x season x league table
-  metrics/              catalog, percentiles, league strength, value, similarity, potential
+  metrics/              catalog, percentiles, league strength, value, backtest, similarity, potential, trend
   insights.py           automatic bilingual insights with confidence
   quality.py, health.py data-quality checks and the status board
   case_study.py         the rule-based shortlist used in the case studies
   llm_notes.py          optional AI scouting notes
   ui/                   theme, translations, filters, charts, shared components
 tests/                  synthetic data only; no real player data in the tests
-docs/                   methodology, case studies, screenshots
+docs/                   methodology, case studies, backtest, screenshots
 ```
 
 ## About this project
