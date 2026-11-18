@@ -1,5 +1,11 @@
 # Football Recruitment Analytics
 
+[![CI](https://github.com/amarialeitao/football-recruitment-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/amarialeitao/football-recruitment-analytics/actions/workflows/ci.yml)
+[![Live demo](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://football-recruitment-analytics.streamlit.app)
+![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-D7FF64?logo=ruff&logoColor=black)](https://github.com/astral-sh/ruff)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A scouting tool for a club that has to recruit well without spending much: find players in Liga
 Portugal and seven comparable leagues, profile them, compare them, and say clearly how much the
 data behind each conclusion can be trusted.
